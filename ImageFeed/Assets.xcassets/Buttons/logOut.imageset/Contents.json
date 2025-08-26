@@ -1,10 +1,12 @@
 {
   "images" : [
     {
+      "filename" : "Exit 2.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
+      "filename" : "Exit 1.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },

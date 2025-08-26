@@ -100,7 +100,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1828.985507246377" y="-218.30357142857142"/>
+            <point key="canvasLocation" x="1067" y="3"/>
         </scene>
         <!--Single Image View Controller-->
         <scene sceneID="mDa-NP-DFy">
@@ -117,6 +117,18 @@
                                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     </imageView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uvn-uU-iRB" userLabel="share_Button">
+                                        <rect key="frame" x="182" y="795" width="50" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="OIn-pQ-hhp"/>
+                                            <constraint firstAttribute="width" constant="50" id="n86-wH-nMk"/>
+                                        </constraints>
+                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                        <state key="normal" image="share"/>
+                                        <connections>
+                                            <action selector="didTapShareButton:" destination="ffs-D3-KUZ" eventType="touchUpInside" id="2fS-ez-IqT"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                                 <viewLayoutGuide key="contentLayoutGuide" id="IAT-sF-JbI"/>
                                 <viewLayoutGuide key="frameLayoutGuide" id="fq8-5t-8lv"/>
@@ -124,17 +136,17 @@
                                     <outlet property="delegate" destination="ffs-D3-KUZ" id="6dy-LR-wXB"/>
                                 </connections>
                             </scrollView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JE0-3o-LdO">
-                                <rect key="frame" x="8" y="56" width="24" height="24"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JE0-3o-LdO" userLabel="back_Button">
+                                <rect key="frame" x="8" y="56" width="48" height="48"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="24" id="i1Q-HG-acr"/>
-                                    <constraint firstAttribute="height" constant="24" id="xc9-tF-tJZ"/>
+                                    <constraint firstAttribute="width" constant="48" id="i1Q-HG-acr"/>
+                                    <constraint firstAttribute="height" constant="48" id="xc9-tF-tJZ"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="18"/>
                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                 <state key="normal" image="backward_button"/>
                                 <connections>
-                                    <action selector="didTapBackButton" destination="ffs-D3-KUZ" eventType="touchUpInside" id="U8m-de-VyU"/>
+                                    <action selector="didTapBackButton:" destination="ffs-D3-KUZ" eventType="touchUpInside" id="hda-6j-149"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -145,19 +157,21 @@
                             <constraint firstItem="lQG-xv-ycx" firstAttribute="top" secondItem="QlI-tE-LMO" secondAttribute="top" id="8K3-Hi-1H0"/>
                             <constraint firstItem="JE0-3o-LdO" firstAttribute="leading" secondItem="GxY-fJ-FeE" secondAttribute="leading" constant="8" id="Apy-q8-hkX"/>
                             <constraint firstItem="GxY-fJ-FeE" firstAttribute="leading" secondItem="lQG-xv-ycx" secondAttribute="leading" id="PdL-dH-NwP"/>
+                            <constraint firstItem="GxY-fJ-FeE" firstAttribute="bottom" secondItem="uvn-uU-iRB" secondAttribute="bottom" constant="17" id="ZWn-st-6MV"/>
+                            <constraint firstItem="uvn-uU-iRB" firstAttribute="centerX" secondItem="GxY-fJ-FeE" secondAttribute="centerX" id="qZy-e3-1dI"/>
                             <constraint firstItem="GxY-fJ-FeE" firstAttribute="trailing" secondItem="lQG-xv-ycx" secondAttribute="trailing" id="tCo-Tx-ibs"/>
                             <constraint firstAttribute="bottom" secondItem="lQG-xv-ycx" secondAttribute="bottom" id="uJ7-mR-aXw"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="vhN-Ms-Ud5"/>
                     <connections>
-                        <outlet property="imageView" destination="EbG-8h-4yT" id="7rh-Jd-d8E"/>
+                        <outlet property="imageView" destination="EbG-8h-4yT" id="lcs-wD-cQ6"/>
                         <outlet property="scrollView" destination="lQG-xv-ycx" id="eZi-W6-zow"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="gTX-x1-LIw" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2715.9420289855075" y="-218.30357142857142"/>
+            <point key="canvasLocation" x="2118.840579710145" y="2.6785714285714284"/>
         </scene>
         <!--Profile-->
         <scene sceneID="oET-z6-ZMl">
@@ -174,7 +188,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="hat-DG-skt" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="919" y="465"/>
+            <point key="canvasLocation" x="1067" y="686"/>
         </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="W3X-Zi-1W8">
@@ -197,13 +211,14 @@
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="wXD-op-l2z" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="60.869565217391312" y="92.410714285714278"/>
+            <point key="canvasLocation" x="23" y="307"/>
         </scene>
     </scenes>
     <resources>
         <image name="0" width="800" height="529.5"/>
         <image name="backward_button" width="12" height="12"/>
         <image name="like_button_on" width="44" height="44"/>
+        <image name="share" width="25" height="25"/>
         <image name="tab_editorial_active" width="15" height="15"/>
         <image name="tab_profile_active" width="15" height="15"/>
         <namedColor name="YP Black (iOS)">

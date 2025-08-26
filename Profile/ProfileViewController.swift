@@ -37,7 +37,7 @@ class ProfileViewController: UIViewController {
         
     }
     private func setupUserPickVeiw() {
-        userPick = UIImage(named: "UserPick") ?? UIImage(systemName: "person.crop.circle.fill")!
+        userPick = UIImage(named: "usepPick") ?? UIImage(systemName: "person.crop.circle.fill")!
         userPickVeiw = UIImageView(image: userPick)
         userPickVeiw.layer.masksToBounds = false
         userPickVeiw.layer.cornerRadius = 35
@@ -46,7 +46,7 @@ class ProfileViewController: UIViewController {
         view.addSubview(userPickVeiw)
     }
     private func setupLogoutButton() {
-        let image = UIImage(named: "logout")?.withRenderingMode(.alwaysOriginal) ?? UIImage(systemName: "arrow.backward")!
+        let image = UIImage(named: "logOut")?.withRenderingMode(.alwaysOriginal) ?? UIImage(systemName: "arrow.backward")!
         
         logoutButton = UIButton(type: .custom)
         logoutButton.setImage(image, for: .normal)
