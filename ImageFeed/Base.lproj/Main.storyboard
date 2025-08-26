@@ -89,7 +89,7 @@
                             <constraint firstAttribute="top" secondItem="0ZD-Gs-GgP" secondAttribute="top" id="l0f-Ng-QVT"/>
                         </constraints>
                     </view>
-                    <tabBarItem key="tabBarItem" title="" image="tab_editorial_active" id="hOE-Lv-QFU"/>
+                    <tabBarItem key="tabBarItem" title="" image="tab_editorial_inactive" selectedImage="tab_editorial_active" id="hOE-Lv-QFU"/>
                     <navigationItem key="navigationItem" id="rAP-BT-3zf"/>
                     <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
@@ -115,8 +115,8 @@
                         </tabBarAppearance>
                     </tabBar>
                     <connections>
-                        <segue destination="YID-7w-evW" kind="relationship" relationship="viewControllers" id="HE1-Xc-yYb"/>
-                        <segue destination="BYZ-38-t0r" kind="relationship" relationship="viewControllers" id="SEh-8g-hs7"/>
+                        <segue destination="BYZ-38-t0r" kind="relationship" relationship="viewControllers" id="4Yv-9r-Rgp"/>
+                        <segue destination="YID-7w-evW" kind="relationship" relationship="viewControllers" id="Ln2-ZG-FGh"/>
                     </connections>
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="wXD-op-l2z" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -133,7 +133,7 @@
                         <viewLayoutGuide key="safeArea" id="rY1-CR-9TG"/>
                         <color key="backgroundColor" red="0.1019607843" green="0.1058823529" blue="0.1333333333" alpha="1" colorSpace="calibratedRGB"/>
                     </view>
-                    <tabBarItem key="tabBarItem" title="" image="tab_profile_active" id="qPb-gG-ms9"/>
+                    <tabBarItem key="tabBarItem" title="" image="tab_profile_inactive" selectedImage="tab_profile_active" id="qPb-gG-ms9"/>
                     <navigationItem key="navigationItem" id="fo9-4V-h3O"/>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="hat-DG-skt" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -155,18 +155,6 @@
                                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     </imageView>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uvn-uU-iRB" userLabel="share_Button">
-                                        <rect key="frame" x="182" y="795" width="50" height="50"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="50" id="OIn-pQ-hhp"/>
-                                            <constraint firstAttribute="width" constant="50" id="n86-wH-nMk"/>
-                                        </constraints>
-                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
-                                        <state key="normal" image="share"/>
-                                        <connections>
-                                            <action selector="didTapShareButton:" destination="ffs-D3-KUZ" eventType="touchUpInside" id="2fS-ez-IqT"/>
-                                        </connections>
-                                    </button>
                                 </subviews>
                                 <viewLayoutGuide key="contentLayoutGuide" id="IAT-sF-JbI"/>
                                 <viewLayoutGuide key="frameLayoutGuide" id="fq8-5t-8lv"/>
@@ -174,6 +162,18 @@
                                     <outlet property="delegate" destination="ffs-D3-KUZ" id="6dy-LR-wXB"/>
                                 </connections>
                             </scrollView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uvn-uU-iRB" userLabel="share_Button">
+                                <rect key="frame" x="182" y="795" width="50" height="50"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="OIn-pQ-hhp"/>
+                                    <constraint firstAttribute="width" constant="50" id="n86-wH-nMk"/>
+                                </constraints>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal" image="share"/>
+                                <connections>
+                                    <action selector="didTapShareButton:" destination="ffs-D3-KUZ" eventType="touchUpInside" id="2fS-ez-IqT"/>
+                                </connections>
+                            </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JE0-3o-LdO" userLabel="back_Button">
                                 <rect key="frame" x="8" y="56" width="48" height="48"/>
                                 <constraints>
@@ -195,10 +195,10 @@
                             <constraint firstItem="lQG-xv-ycx" firstAttribute="top" secondItem="QlI-tE-LMO" secondAttribute="top" id="8K3-Hi-1H0"/>
                             <constraint firstItem="JE0-3o-LdO" firstAttribute="leading" secondItem="GxY-fJ-FeE" secondAttribute="leading" constant="8" id="Apy-q8-hkX"/>
                             <constraint firstItem="GxY-fJ-FeE" firstAttribute="leading" secondItem="lQG-xv-ycx" secondAttribute="leading" id="PdL-dH-NwP"/>
-                            <constraint firstItem="GxY-fJ-FeE" firstAttribute="bottom" secondItem="uvn-uU-iRB" secondAttribute="bottom" constant="17" id="ZWn-st-6MV"/>
-                            <constraint firstItem="uvn-uU-iRB" firstAttribute="centerX" secondItem="GxY-fJ-FeE" secondAttribute="centerX" id="qZy-e3-1dI"/>
+                            <constraint firstItem="uvn-uU-iRB" firstAttribute="centerX" secondItem="GxY-fJ-FeE" secondAttribute="centerX" id="qzD-e3-yKd"/>
                             <constraint firstItem="GxY-fJ-FeE" firstAttribute="trailing" secondItem="lQG-xv-ycx" secondAttribute="trailing" id="tCo-Tx-ibs"/>
                             <constraint firstAttribute="bottom" secondItem="lQG-xv-ycx" secondAttribute="bottom" id="uJ7-mR-aXw"/>
+                            <constraint firstItem="GxY-fJ-FeE" firstAttribute="bottom" secondItem="uvn-uU-iRB" secondAttribute="bottom" constant="17" id="zMN-pM-TMF"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="vhN-Ms-Ud5"/>
@@ -218,7 +218,9 @@
         <image name="like_button_on" width="44" height="44"/>
         <image name="share" width="50.5" height="50"/>
         <image name="tab_editorial_active" width="75" height="49"/>
+        <image name="tab_editorial_inactive" width="112.5" height="73.5"/>
         <image name="tab_profile_active" width="30" height="30"/>
+        <image name="tab_profile_inactive" width="113" height="73.5"/>
         <namedColor name="YP Background (iOS)">
             <color red="0.10196078431372549" green="0.10588235294117647" blue="0.13333333333333333" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

@@ -17,17 +17,17 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="LaunchLogo" translatesAutoresizingMaskIntoConstraints="NO" id="SKZ-Ob-fda" userLabel="splash_logo">
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Logo" translatesAutoresizingMaskIntoConstraints="NO" id="SKZ-Ob-fda">
                                 <rect key="frame" x="0.0" y="118" width="393" height="666"/>
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" name="YP Black (iOS)"/>
                         <constraints>
-                            <constraint firstItem="SKZ-Ob-fda" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="Ypp-rg-nBP"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="SKZ-Ob-fda" secondAttribute="bottom" id="dJr-OH-GpP"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="SKZ-Ob-fda" secondAttribute="trailing" id="leL-qw-djw"/>
-                            <constraint firstItem="SKZ-Ob-fda" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="oBX-x1-WGU"/>
+                            <constraint firstItem="SKZ-Ob-fda" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="MZf-Bb-iNk"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="SKZ-Ob-fda" secondAttribute="trailing" id="Tua-J8-4JL"/>
+                            <constraint firstItem="SKZ-Ob-fda" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="dqI-tz-Fg8"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="SKZ-Ob-fda" secondAttribute="bottom" id="s89-pn-gcB"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -37,7 +37,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="LaunchLogo" width="24.666666030883789" height="25.666666030883789"/>
+        <image name="Logo" width="75" height="78"/>
         <namedColor name="YP Black (iOS)">
             <color red="0.10196078431372549" green="0.10588235294117647" blue="0.13333333333333333" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
