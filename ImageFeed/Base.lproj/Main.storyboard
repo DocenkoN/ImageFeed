@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="2iM-qe-nrm">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="nea-Uj-8h3">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
@@ -100,6 +100,52 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1067" y="3"/>
+        </scene>
+        <!--Auth View Controller-->
+        <scene sceneID="bYm-rC-24U">
+            <objects>
+                <viewController id="nea-Uj-8h3" customClass="AuthViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="wYm-bu-sTP">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_of_unsplash" translatesAutoresizingMaskIntoConstraints="NO" id="GRN-op-8JL">
+                                <rect key="frame" x="0.0" y="96" width="414" height="732"/>
+                            </imageView>
+                            <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uwr-Gd-SCU">
+                                <rect key="frame" x="16" y="695" width="382" height="43"/>
+                                <color key="backgroundColor" name="YP White (iOS)"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="43" id="tRy-9n-Y67"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal" title="Войти">
+                                    <color key="titleColor" name="YP Black (iOS)"/>
+                                </state>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="16"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </button>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="epG-5z-c9v"/>
+                        <color key="backgroundColor" name="YP Black (iOS)"/>
+                        <constraints>
+                            <constraint firstItem="GRN-op-8JL" firstAttribute="leading" secondItem="epG-5z-c9v" secondAttribute="leading" id="1iU-bj-nUZ"/>
+                            <constraint firstItem="uwr-Gd-SCU" firstAttribute="leading" secondItem="epG-5z-c9v" secondAttribute="leading" constant="16" id="AwT-Ia-s6G"/>
+                            <constraint firstItem="epG-5z-c9v" firstAttribute="bottom" secondItem="GRN-op-8JL" secondAttribute="bottom" id="IZ6-ve-2i5"/>
+                            <constraint firstItem="uwr-Gd-SCU" firstAttribute="bottom" secondItem="epG-5z-c9v" secondAttribute="bottom" constant="-90" id="Nbw-DA-Ih2"/>
+                            <constraint firstItem="epG-5z-c9v" firstAttribute="trailing" secondItem="uwr-Gd-SCU" secondAttribute="trailing" constant="16" id="Rtg-Z4-m9y"/>
+                            <constraint firstItem="epG-5z-c9v" firstAttribute="trailing" secondItem="GRN-op-8JL" secondAttribute="trailing" id="UrL-q9-KXC"/>
+                            <constraint firstItem="GRN-op-8JL" firstAttribute="top" secondItem="epG-5z-c9v" secondAttribute="top" id="ec4-Ni-n6M"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="31Y-bQ-CSM" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-901" y="307"/>
         </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="W3X-Zi-1W8">
@@ -216,6 +262,7 @@
         <image name="0" width="800" height="529.5"/>
         <image name="backward_button" width="24" height="24"/>
         <image name="like_button_on" width="44" height="44"/>
+        <image name="logo_of_unsplash" width="90" height="90"/>
         <image name="share" width="50.5" height="50"/>
         <image name="tab_editorial_active" width="75" height="49"/>
         <image name="tab_editorial_inactive" width="112.5" height="73.5"/>
@@ -226,6 +273,9 @@
         </namedColor>
         <namedColor name="YP Black (iOS)">
             <color red="0.10196078431372549" green="0.10588235294117647" blue="0.13333333333333333" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="YP White (iOS)">
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>
