@@ -11,6 +11,7 @@
 		AD430AEC2E48C7A900F90C76 /* ImagesListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD430AEB2E48C7A900F90C76 /* ImagesListCell.swift */; };
 		AD4844142E589B2200279658 /* SingleImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD4844132E589B2200279658 /* SingleImageViewController.swift */; };
 		AD4844152E589B2200279658 /* SingleImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD4844132E589B2200279658 /* SingleImageViewController.swift */; };
+		AD8AFB3D2E606C0900922AD3 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD8AFB3C2E606C0900922AD3 /* Constants.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,6 +38,7 @@
 		AD430AD72E48C0AE00F90C76 /* ImagesListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagesListViewController.swift; sourceTree = "<group>"; };
 		AD430AEB2E48C7A900F90C76 /* ImagesListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagesListCell.swift; sourceTree = "<group>"; };
 		AD4844132E589B2200279658 /* SingleImageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleImageViewController.swift; sourceTree = "<group>"; };
+		AD8AFB3C2E606C0900922AD3 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -105,7 +107,8 @@
 		AD1DA9392E44B12A00E501B5 = {
 			isa = PBXGroup;
 			children = (
-				AD4844132E589B2200279658 /* SingleImageViewController.swift */,
+				AD8AFB3E2E607F3500922AD3 /* SingleImageViewController */,
+				AD8AFB3B2E606BE600922AD3 /* Constant */,
 				AD401CB32E54AB6B00711382 /* Profile */,
 				AD430AED2E48C80C00F90C76 /* ImagesList */,
 				AD1DA9442E44B12A00E501B5 /* ImageFeed */,
@@ -132,6 +135,22 @@
 				AD430AEB2E48C7A900F90C76 /* ImagesListCell.swift */,
 			);
 			path = ImagesList;
+			sourceTree = "<group>";
+		};
+		AD8AFB3B2E606BE600922AD3 /* Constant */ = {
+			isa = PBXGroup;
+			children = (
+				AD8AFB3C2E606C0900922AD3 /* Constants.swift */,
+			);
+			path = Constant;
+			sourceTree = "<group>";
+		};
+		AD8AFB3E2E607F3500922AD3 /* SingleImageViewController */ = {
+			isa = PBXGroup;
+			children = (
+				AD4844132E589B2200279658 /* SingleImageViewController.swift */,
+			);
+			path = SingleImageViewController;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -281,6 +300,7 @@
 			files = (
 				AD430AEC2E48C7A900F90C76 /* ImagesListCell.swift in Sources */,
 				AD430AE02E48C0AE00F90C76 /* ImagesListViewController.swift in Sources */,
+				AD8AFB3D2E606C0900922AD3 /* Constants.swift in Sources */,
 				AD4844152E589B2200279658 /* SingleImageViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
