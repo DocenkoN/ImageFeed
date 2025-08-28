@@ -3,12 +3,14 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 74;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		AD430AE02E48C0AE00F90C76 /* ImagesListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD430AD72E48C0AE00F90C76 /* ImagesListViewController.swift */; };
 		AD430AEC2E48C7A900F90C76 /* ImagesListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD430AEB2E48C7A900F90C76 /* ImagesListCell.swift */; };
+		AD4844142E589B2200279658 /* SingleImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD4844132E589B2200279658 /* SingleImageViewController.swift */; };
+		AD4844152E589B2200279658 /* SingleImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD4844132E589B2200279658 /* SingleImageViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +36,7 @@
 		AD1DA9622E44B12E00E501B5 /* ImageFeedUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImageFeedUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AD430AD72E48C0AE00F90C76 /* ImagesListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagesListViewController.swift; sourceTree = "<group>"; };
 		AD430AEB2E48C7A900F90C76 /* ImagesListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagesListCell.swift; sourceTree = "<group>"; };
+		AD4844132E589B2200279658 /* SingleImageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleImageViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -44,12 +47,34 @@
 			);
 			target = AD1DA9412E44B12A00E501B5 /* ImageFeed */;
 		};
+		AD401CB52E54AB6C00711382 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ProfileViewController.swift,
+			);
+			target = AD1DA9412E44B12A00E501B5 /* ImageFeed */;
+		};
+		AD401CB62E54AB6C00711382 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ProfileViewController.swift,
+			);
+			target = AD1DA9612E44B12E00E501B5 /* ImageFeedUITests */;
+		};
+		AD8286682E58A3F000FA119B /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				/Localized/Main.storyboard,
+			);
+			target = AD1DA9612E44B12E00E501B5 /* ImageFeedUITests */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		AD1DA9442E44B12A00E501B5 /* ImageFeed */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (AD1DA96A2E44B12E00E501B5 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = ImageFeed; sourceTree = "<group>"; };
+		AD1DA9442E44B12A00E501B5 /* ImageFeed */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (AD1DA96A2E44B12E00E501B5 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, AD8286682E58A3F000FA119B /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = ImageFeed; sourceTree = "<group>"; };
 		AD1DA95B2E44B12E00E501B5 /* ImageFeedTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ImageFeedTests; sourceTree = "<group>"; };
 		AD1DA9652E44B12E00E501B5 /* ImageFeedUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ImageFeedUITests; sourceTree = "<group>"; };
+		AD401CB32E54AB6B00711382 /* Profile */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (AD401CB52E54AB6C00711382 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, AD401CB62E54AB6C00711382 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Profile; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +105,8 @@
 		AD1DA9392E44B12A00E501B5 = {
 			isa = PBXGroup;
 			children = (
+				AD4844132E589B2200279658 /* SingleImageViewController.swift */,
+				AD401CB32E54AB6B00711382 /* Profile */,
 				AD430AED2E48C80C00F90C76 /* ImagesList */,
 				AD1DA9442E44B12A00E501B5 /* ImageFeed */,
 				AD1DA95B2E44B12E00E501B5 /* ImageFeedTests */,
@@ -170,6 +197,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				AD1DA9652E44B12E00E501B5 /* ImageFeedUITests */,
+				AD401CB32E54AB6B00711382 /* Profile */,
 			);
 			name = ImageFeedUITests;
 			packageProductDependencies = (
@@ -202,7 +230,6 @@
 				};
 			};
 			buildConfigurationList = AD1DA93D2E44B12A00E501B5 /* Build configuration list for PBXProject "ImageFeed" */;
-			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -211,6 +238,7 @@
 			);
 			mainGroup = AD1DA9392E44B12A00E501B5;
 			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 56;
 			productRefGroup = AD1DA9432E44B12A00E501B5 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -253,6 +281,7 @@
 			files = (
 				AD430AEC2E48C7A900F90C76 /* ImagesListCell.swift in Sources */,
 				AD430AE02E48C0AE00F90C76 /* ImagesListViewController.swift in Sources */,
+				AD4844152E589B2200279658 /* SingleImageViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -267,6 +296,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AD4844142E589B2200279658 /* SingleImageViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
