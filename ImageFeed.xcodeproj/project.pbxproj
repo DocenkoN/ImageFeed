@@ -12,6 +12,7 @@
 		AD4844142E589B2200279658 /* SingleImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD4844132E589B2200279658 /* SingleImageViewController.swift */; };
 		AD4844152E589B2200279658 /* SingleImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD4844132E589B2200279658 /* SingleImageViewController.swift */; };
 		AD8AFB3D2E606C0900922AD3 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD8AFB3C2E606C0900922AD3 /* Constants.swift */; };
+		AD8AFB492E60D0EC00922AD3 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AD8AFB482E60D0EC00922AD3 /* WebKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,6 +40,7 @@
 		AD430AEB2E48C7A900F90C76 /* ImagesListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagesListCell.swift; sourceTree = "<group>"; };
 		AD4844132E589B2200279658 /* SingleImageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleImageViewController.swift; sourceTree = "<group>"; };
 		AD8AFB3C2E606C0900922AD3 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		AD8AFB482E60D0EC00922AD3 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -70,6 +72,14 @@
 			);
 			target = AD1DA9612E44B12E00E501B5 /* ImageFeedUITests */;
 		};
+		AD8AFB432E60C1E000922AD3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				AuthViewController.swift,
+				WebViewViewController.swift,
+			);
+			target = AD1DA9412E44B12A00E501B5 /* ImageFeed */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -77,7 +87,7 @@
 		AD1DA95B2E44B12E00E501B5 /* ImageFeedTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ImageFeedTests; sourceTree = "<group>"; };
 		AD1DA9652E44B12E00E501B5 /* ImageFeedUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ImageFeedUITests; sourceTree = "<group>"; };
 		AD401CB32E54AB6B00711382 /* Profile */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (AD401CB52E54AB6C00711382 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, AD401CB62E54AB6C00711382 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Profile; sourceTree = "<group>"; };
-		AD8AFB3F2E60C19500922AD3 /* Auth */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Auth; sourceTree = "<group>"; };
+		AD8AFB3F2E60C19500922AD3 /* Auth */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (AD8AFB432E60C1E000922AD3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Auth; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,6 +95,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AD8AFB492E60D0EC00922AD3 /* WebKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -116,6 +127,7 @@
 				AD1DA9442E44B12A00E501B5 /* ImageFeed */,
 				AD1DA95B2E44B12E00E501B5 /* ImageFeedTests */,
 				AD1DA9652E44B12E00E501B5 /* ImageFeedUITests */,
+				AD8AFB472E60D0EC00922AD3 /* Frameworks */,
 				AD1DA9432E44B12A00E501B5 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -153,6 +165,14 @@
 				AD4844132E589B2200279658 /* SingleImageViewController.swift */,
 			);
 			path = SingleImageViewController;
+			sourceTree = "<group>";
+		};
+		AD8AFB472E60D0EC00922AD3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AD8AFB482E60D0EC00922AD3 /* WebKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
