@@ -76,6 +76,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				AuthViewController.swift,
+				OAuth2Service.swift,
 				WebViewViewController.swift,
 			);
 			target = AD1DA9412E44B12A00E501B5 /* ImageFeed */;
