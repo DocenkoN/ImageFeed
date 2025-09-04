@@ -1,6 +1,12 @@
 import UIKit
 
+protocol AuthViewControllerDelegate: AnyObject {
+    func didAuthenticate(_ vc: AuthViewController)
+}
+
 final class AuthViewController: UIViewController {
+    weak var delegate: AuthViewControllerDelegate?
+    private let oauth2Service = OAuth2Service.shared
     private let showWebViewSegue = "ShowWebView"
     
     
@@ -34,11 +40,20 @@ final class AuthViewController: UIViewController {
 
 extension AuthViewController: WebViewViewControllerDelegate {
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
-        //TODO: process code
+        OAuth2Service.shared.fetchOAuthToken(code: code) { [weak self] result in
+            guard let self else { return }
+            switch result {
+            case .success:
+                self.delegate?.didAuthenticate(self)
+            case .failure(let error):
+                print("Ошибка авторизации: \(error.localizedDescription)")
+            }
+        }
     }
 
     func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
         vc.dismiss(animated: true)
     }
 }
+
 
