@@ -40,10 +40,12 @@ final class AuthViewController: UIViewController {
 
 extension AuthViewController: WebViewViewControllerDelegate {
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
-        OAuth2Service.shared.fetchOAuthToken(code: code) { [weak self] result in
+        vc.dismiss(animated: true)
+        oauth2Service.fetchOAuthToken(code: code) { [weak self] result in
             guard let self else { return }
             switch result {
-            case .success:
+            case .success(let token):
+                OAuth2TokenStorage.shared.token = token
                 self.delegate?.didAuthenticate(self)
             case .failure(let error):
                 print("Ошибка авторизации: \(error.localizedDescription)")
