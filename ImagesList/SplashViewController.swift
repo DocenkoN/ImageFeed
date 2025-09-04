@@ -18,7 +18,7 @@ final class SplashViewController: UIViewController {
     
     private func switchToTabBarController() {
         guard let window = UIApplication.shared.windows.first else {
-            assertionFailure("❌ Invalid window configuration")
+            assertionFailure(" Invalid window configuration")
             return
         }
         let tabBarController = UIStoryboard(name: "Main", bundle: .main)
@@ -35,7 +35,7 @@ extension SplashViewController {
                 let navigationController = segue.destination as? UINavigationController,
                 let viewController = navigationController.viewControllers[0] as? AuthViewController
             else {
-                assertionFailure("❌ Failed to prepare for \(showAuthenticationScreenSegueIdentifier)")
+                assertionFailure(" Failed to prepare for \(showAuthenticationScreenSegueIdentifier)")
                 return
             }
             viewController.delegate = self

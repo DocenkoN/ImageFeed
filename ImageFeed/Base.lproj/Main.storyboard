@@ -111,7 +111,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <wkWebView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="C7C-cW-lWI">
-                                <rect key="frame" x="0.0" y="48" width="414" height="780"/>
+                                <rect key="frame" x="0.0" y="92" width="414" height="736"/>
                                 <color key="backgroundColor" name="YP White (iOS)"/>
                                 <wkWebViewConfiguration key="configuration">
                                     <audiovisualMediaTypes key="mediaTypesRequiringUserActionForPlayback" none="YES"/>
@@ -119,7 +119,7 @@
                                 </wkWebViewConfiguration>
                             </wkWebView>
                             <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="FlA-JQ-dbG">
-                                <rect key="frame" x="0.0" y="48" width="414" height="4"/>
+                                <rect key="frame" x="0.0" y="92" width="414" height="4"/>
                                 <color key="progressTintColor" name="YP Black (iOS)"/>
                             </progressView>
                         </subviews>
@@ -170,7 +170,7 @@
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                                 <connections>
-                                    <segue destination="Fan-9R-IEO" kind="presentation" identifier="ShowWebView" modalPresentationStyle="fullScreen" id="6ho-Dm-aXn"/>
+                                    <segue destination="Fan-9R-IEO" kind="show" identifier="ShowWebView" id="6ho-Dm-aXn"/>
                                 </connections>
                             </button>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_of_unsplash" translatesAutoresizingMaskIntoConstraints="NO" id="GRN-op-8JL" userLabel="auth_screen_logo">
