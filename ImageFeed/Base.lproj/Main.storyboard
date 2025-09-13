@@ -170,6 +170,7 @@
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                                 <connections>
+                                    <action selector="didTapLogin:" destination="nea-Uj-8h3" eventType="touchUpInside" id="Ng7-ZA-4qP"/>
                                     <segue destination="Fan-9R-IEO" kind="show" identifier="ShowWebView" id="6ho-Dm-aXn"/>
                                 </connections>
                             </button>
@@ -192,6 +193,9 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="c6f-UQ-kKt"/>
+                    <connections>
+                        <outlet property="loginButton" destination="uwr-Gd-SCU" id="fK1-4G-ajF"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="31Y-bQ-CSM" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>

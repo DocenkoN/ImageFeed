@@ -1,61 +1,71 @@
 import UIKit
 
-protocol AuthViewControllerDelegate: AnyObject {
-    func didAuthenticate(_ vc: AuthViewController)
-}
-
 final class AuthViewController: UIViewController {
-    weak var delegate: AuthViewControllerDelegate?
-    private let oauth2Service = OAuth2Service.shared
-    private let showWebViewSegue = "ShowWebView"
-    
-    
-    override func viewDidLoad() {
-           super.viewDidLoad()
-           configureBackButton()
-       }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == showWebViewSegue {
-            guard
-                let webViewViewController = segue.destination as? WebViewViewController
-            else {
-                assertionFailure("Failed to prepare for \(showWebViewSegue)")
-                return
-            }
-            webViewViewController.delegate = self
-        } else {
-            super.prepare(for: segue, sender: sender)
+
+    @IBOutlet private weak var loginButton: UIButton?
+    private var isFetchingToken = false
+
+    var onAuthorizationFinished: (() -> Void)?
+
+    @IBAction private func didTapLogin(_ sender: UIButton) {
+        guard !isFetchingToken else { return }
+        isFetchingToken = true
+        sender.isEnabled = false
+
+        let webViewViewController = WebViewViewController()
+        webViewViewController.delegate = self
+        let navigationController = UINavigationController(rootViewController: webViewViewController)
+        navigationController.modalPresentationStyle = .fullScreen
+
+        present(navigationController, animated: true) { [weak self] in
+            self?.isFetchingToken = false
+            sender.isEnabled = true
         }
     }
-    
-    private func configureBackButton() {
-        navigationController?.navigationBar.backIndicatorImage = UIImage(named: "nav_back_button")
-        navigationController?.navigationBar.backIndicatorTransitionMaskImage = UIImage(named: "nav_back_button")
-        navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
-        navigationItem.backBarButtonItem?.tintColor = UIColor(named: "YP Black (iOS)")
-        
+
+    private func exchangeAuthorizationCodeForToken(_ authorizationCode: String) {
+        guard !isFetchingToken else { return }
+        isFetchingToken = true
+        loginButton?.isEnabled = false
+
+        OAuth2Service.shared.fetchOAuthToken(code: authorizationCode) { [weak self] result in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                self.isFetchingToken = false
+                self.loginButton?.isEnabled = true
+
+                switch result {
+                case .success(let accessToken):
+                    OAuth2TokenStorage.shared.token = accessToken
+                    self.dismiss(animated: true) {
+                        self.onAuthorizationFinished?()
+                        NotificationCenter.default.post(name: .init("AuthSuccess"), object: nil)
+                    }
+                case .failure(let error):
+                    let alertController = UIAlertController(
+                        title: "Ошибка авторизации",
+                        message: error.localizedDescription,
+                        preferredStyle: .alert
+                    )
+                    alertController.addAction(UIAlertAction(title: "OK", style: .default))
+                    self.present(alertController, animated: true)
+                }
+            }
+        }
     }
 }
 
 extension AuthViewController: WebViewViewControllerDelegate {
-    func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
-        vc.dismiss(animated: true)
-        oauth2Service.fetchOAuthToken(code: code) { [weak self] result in
-            guard let self else { return }
-            switch result {
-            case .success(let token):
-                OAuth2TokenStorage.shared.token = token
-                self.delegate?.didAuthenticate(self)
-            case .failure(let error):
-                print("Ошибка авторизации: \(error.localizedDescription)")
-            }
-        }
+    func webViewViewController(_ viewController: WebViewViewController, didAuthenticateWithCode authorizationCode: String) {
+        exchangeAuthorizationCodeForToken(authorizationCode)
     }
 
-    func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
-        vc.dismiss(animated: true)
+    func webViewViewControllerDidCancel(_ viewController: WebViewViewController) {
+        viewController.dismiss(animated: true)
     }
 }
+
+
+
 
 

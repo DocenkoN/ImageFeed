@@ -14,7 +14,7 @@ final class OAuth2Service {
     private init() {}
     
     func makeOAuthTokenRequest(code: String) -> URLRequest? {
-        guard let url = URL(string: "https://unsplash.com/oauth/token") else { return nil }
+        guard let url = URL(string: WebViewConstants.unsplashTokenURLString) else { return nil }
         
         var body = URLComponents()
         body.queryItems = [
@@ -51,7 +51,7 @@ final class OAuth2Service {
             }
             
             guard let http = response as? HTTPURLResponse, let data = data else {
-                print("Некорректный ответ сервера")
+                print("Неверный ответ сервера")
                 DispatchQueue.main.async {
                     completion(.failure(OAuth2ServiceError.invalidResponse))
                 }
