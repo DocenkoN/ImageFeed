@@ -1,4 +1,5 @@
 import UIKit
+import ProgressHUD
 
 final class AuthViewController: UIViewController {
 
@@ -57,13 +58,23 @@ final class AuthViewController: UIViewController {
 
 extension AuthViewController: WebViewViewControllerDelegate {
     func webViewViewController(_ viewController: WebViewViewController, didAuthenticateWithCode authorizationCode: String) {
-        exchangeAuthorizationCodeForToken(authorizationCode)
+        // Закрываем WebView
+        viewController.dismiss(animated: true) { [weak self] in
+            guard let self = self else { return }
+
+            // Показываем индикатор загрузки
+            ProgressHUD.show("Loading...")
+
+            // Меняем код авторизации на токен
+            self.exchangeAuthorizationCodeForToken(authorizationCode)
+        }
     }
 
     func webViewViewControllerDidCancel(_ viewController: WebViewViewController) {
         viewController.dismiss(animated: true)
     }
 }
+
 
 
 
