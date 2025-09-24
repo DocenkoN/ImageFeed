@@ -3,6 +3,7 @@ import Foundation
 enum ProfileServiceError: Error {
     case invalidRequest
     case invalidResponse
+    case decodingError
 }
 
 // MARK: - UI-модель профиля
@@ -56,8 +57,59 @@ final class ProfileService {
     func fetchProfile(username: String, completion: @escaping (Result<Profile, Error>) -> Void) {
         currentTask?.cancel()
         
-        guard let request = makeProfileRequest(username: username) else {
+        guard let request = makeRequest(username: username) else {
             print("[ProfileService]: Ошибка — не удалось создать URLRequest для пользователя \(username)")
+            completion(.failure(ProfileServiceError.invalidRequest))
+            return
         }
+        
+        currentTask = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.currentTask = nil
+                
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                
+                guard
+                    let httpResponse = response as? HTTPURLResponse,
+                    (200...299).contains(httpResponse.statusCode),
+                    let data = data
+                else {
+                    completion(.failure(ProfileServiceError.invalidResponse))
+                    return
+                }
+                
+                do {
+                    let profileResult = try JSONDecoder().decode(ProfileResult.self, from: data)
+                    let profile = Profile(from: profileResult)
+                    self.profile = profile
+                    completion(.success(profile))
+                } catch {
+                    completion(.failure(ProfileServiceError.decodingError))
+                }
+            }
+        }
+        currentTask?.resume()
+    }
+    
+    // MARK: - makeRequest
+    private func makeRequest(username: String) -> URLRequest? {
+        guard let url = URL(string: "https://api.unsplash.com/users/\(username)") else {
+            print("[ProfileService]: Ошибка — некорректный URL для пользователя \(username)")
+            return nil
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        if let token = OAuth2TokenStorage.shared.token {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        return request
     }
 }
+

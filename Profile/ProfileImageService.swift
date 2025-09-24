@@ -25,34 +25,36 @@ final class ProfileImageService {
 
     private(set) var avatarURL: String?
 
-    func fetchProfileImageURL(username: String, _ completion: @escaping (Result<String, Error>) -> Void) {
+    func fetchProfileImageURL(
+        username: String,
+        _ completion: @escaping (Result<String, NetworkError>) -> Void
+    ) {
         task?.cancel()
 
         guard let request = makeRequest(username: username) else {
             print("[ProfileImageService]: Ошибка — не удалось создать URLRequest для пользователя \(username)")
-            completion(.failure(URLError(.badURL)))
+            completion(.failure(.invalidRequest))
             return
         }
 
-        task = urlSession.objectTask(for: request) { [weak self] (result: Result<UserResult, Error>) in
-            DispatchQueue.main.async {
-                defer { self?.task = nil }
+        task = urlSession.objectTask(for: request) { [weak self] (result: Result<UserResult, NetworkError>) in
+            defer { self?.task = nil }
 
-                switch result {
-                case .success(let userResult):
-                    let urlString = userResult.profileImage.small
-                    self?.avatarURL = urlString
-                    completion(.success(urlString))
+            switch result {
+            case .success(let userResult):
+                let urlString = userResult.profileImage.small
+                self?.avatarURL = urlString
+                completion(.success(urlString))
 
-                    NotificationCenter.default.post(
-                        name: ProfileImageService.didChangeNotification,
-                        object: self,
-                        userInfo: ["URL": urlString]
-                    )
-                case .failure(let error):
-                    print("[ProfileImageService]: Ошибка загрузки аватарки — \(error.localizedDescription)")
-                    completion(.failure(error))
-                }
+                NotificationCenter.default.post(
+                    name: ProfileImageService.didChangeNotification,
+                    object: self,
+                    userInfo: ["URL": urlString]
+                )
+
+            case .failure(let error):
+                print("[ProfileImageService]: Ошибка загрузки аватарки — \(error)")
+                completion(.failure(error))
             }
         }
 

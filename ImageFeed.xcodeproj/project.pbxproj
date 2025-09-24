@@ -91,10 +91,18 @@
 			);
 			target = AD1DA9612E44B12E00E501B5 /* ImageFeedUITests */;
 		};
+		AD8F29B32E847F69008AF61A /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				TabBarController.swift,
+			);
+			target = AD1DA9412E44B12A00E501B5 /* ImageFeed */;
+		};
 		ADF43D212E6EC6A20050587B /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				AuthViewController.swift,
+				"URLSession+data.swift",
 				WebViewViewController.swift,
 			);
 			target = AD1DA9412E44B12A00E501B5 /* ImageFeed */;
@@ -115,6 +123,7 @@
 		AD1DA9652E44B12E00E501B5 /* ImageFeedUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ImageFeedUITests; sourceTree = "<group>"; };
 		AD401CB32E54AB6B00711382 /* Profile */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (AD401CB52E54AB6C00711382 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, AD401CB62E54AB6C00711382 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Profile; sourceTree = "<group>"; };
 		AD8AFB3F2E60C19500922AD3 /* Auth */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (ADF43D212E6EC6A20050587B /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ADF43D232E6EC7180050587B /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Auth; sourceTree = "<group>"; };
+		AD8F29AF2E847F48008AF61A /* TabBarController */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (AD8F29B32E847F69008AF61A /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = TabBarController; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -149,6 +158,7 @@
 		AD1DA9392E44B12A00E501B5 = {
 			isa = PBXGroup;
 			children = (
+				AD8F29AF2E847F48008AF61A /* TabBarController */,
 				ADF7EC412E7ECED900B16EA9 /* UIBlockingProgressHUD */,
 				ADBA72EB2E69A86800C41007 /* OAuth2 */,
 				AD8AFB3F2E60C19500922AD3 /* Auth */,
@@ -294,6 +304,7 @@
 				AD1DA9652E44B12E00E501B5 /* ImageFeedUITests */,
 				AD401CB32E54AB6B00711382 /* Profile */,
 				AD8AFB3F2E60C19500922AD3 /* Auth */,
+				AD8F29AF2E847F48008AF61A /* TabBarController */,
 			);
 			name = ImageFeedUITests;
 			packageProductDependencies = (

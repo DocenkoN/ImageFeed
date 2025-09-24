@@ -21,7 +21,10 @@ final class OAuth2Service {
 
     private init() {}
 
-    func fetchOAuthToken(_ code: String, completion: @escaping (Result<String, Error>) -> Void) {
+    func fetchOAuthToken(
+        _ code: String,
+        completion: @escaping (Result<String, Error>) -> Void
+    ) {
         assert(Thread.isMainThread)
 
         if lastCode == code {
@@ -41,23 +44,21 @@ final class OAuth2Service {
         }
 
         // Используем objectTask
-        let task = urlSession.objectTask(for: request) { [weak self] (result: Result<OAuthTokenResponseBody, Error>) in
-            DispatchQueue.main.async {
-                guard let self = self else { return }
+        let task = urlSession.objectTask(for: request) { [weak self] (result: Result<OAuthTokenResponseBody, NetworkError>) in
+            guard let self = self else { return }
+            
+            defer {
+                self.task = nil
+                self.lastCode = nil
+            }
 
-                defer {
-                    self.task = nil
-                    self.lastCode = nil
-                }
-
-                switch result {
-                case .success(let decodedData):
-                    self.authToken = decodedData.accessToken
-                    self.finish(.success(decodedData.accessToken))
-                case .failure(let error):
-                    print("[OAuth2Service]: Ошибка выполнения запроса — \(error.localizedDescription)")
-                    self.finish(.failure(error))
-                }
+            switch result {
+            case .success(let decodedData):
+                self.authToken = decodedData.accessToken
+                self.finish(.success(decodedData.accessToken))
+            case .failure(let error):
+                print("[OAuth2Service]: Ошибка выполнения запроса — \(error)")
+                self.finish(.failure(error))
             }
         }
 
@@ -101,5 +102,3 @@ final class OAuth2Service {
         }
     }
 }
-
-
