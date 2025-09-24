@@ -13,6 +13,8 @@
 		AD4844152E589B2200279658 /* SingleImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD4844132E589B2200279658 /* SingleImageViewController.swift */; };
 		AD8AFB3D2E606C0900922AD3 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD8AFB3C2E606C0900922AD3 /* Constants.swift */; };
 		AD8AFB492E60D0EC00922AD3 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AD8AFB482E60D0EC00922AD3 /* WebKit.framework */; };
+		AD8F29A92E841377008AF61A /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = AD8F29A82E841377008AF61A /* Kingfisher */; };
+		AD8F29AE2E847DC2008AF61A /* SwiftKeychainWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = AD8F29AD2E847DC2008AF61A /* SwiftKeychainWrapper */; };
 		ADBA72E62E65CE3F00C41007 /* OAuth2Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADBA72E52E65CE3F00C41007 /* OAuth2Service.swift */; };
 		ADBA72E72E65CE3F00C41007 /* OAuth2Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADBA72E52E65CE3F00C41007 /* OAuth2Service.swift */; };
 		ADBA72ED2E69A87D00C41007 /* OAuth2TokenStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADBA72EC2E69A87D00C41007 /* OAuth2TokenStorage.swift */; };
@@ -120,7 +122,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AD8F29A92E841377008AF61A /* Kingfisher in Frameworks */,
 				AD8AFB492E60D0EC00922AD3 /* WebKit.framework in Frameworks */,
+				AD8F29AE2E847DC2008AF61A /* SwiftKeychainWrapper in Frameworks */,
 				ADD6A2272E7C417B00974EF0 /* ProgressHUD in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -243,6 +247,8 @@
 			name = ImageFeed;
 			packageProductDependencies = (
 				ADD6A2262E7C417B00974EF0 /* ProgressHUD */,
+				AD8F29A82E841377008AF61A /* Kingfisher */,
+				AD8F29AD2E847DC2008AF61A /* SwiftKeychainWrapper */,
 			);
 			productName = ImageFeed;
 			productReference = AD1DA9422E44B12A00E501B5 /* ImageFeed.app */;
@@ -329,6 +335,8 @@
 			mainGroup = AD1DA9392E44B12A00E501B5;
 			packageReferences = (
 				ADD6A2252E7C3F2D00974EF0 /* XCRemoteSwiftPackageReference "ProgressHUD" */,
+				AD8F29A72E841368008AF61A /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				AD8F29AC2E847DB8008AF61A /* XCRemoteSwiftPackageReference "SwiftKeychainWrapper" */,
 			);
 			preferredProjectObjectVersion = 55;
 			productRefGroup = AD1DA9432E44B12A00E501B5 /* Products */;
@@ -715,6 +723,22 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		AD8F29A72E841368008AF61A /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.5.0;
+			};
+		};
+		AD8F29AC2E847DB8008AF61A /* XCRemoteSwiftPackageReference "SwiftKeychainWrapper" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jrendel/SwiftKeychainWrapper";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 4.0.1;
+			};
+		};
 		ADD6A2252E7C3F2D00974EF0 /* XCRemoteSwiftPackageReference "ProgressHUD" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/relatedcode/ProgressHUD";
@@ -726,6 +750,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		AD8F29A82E841377008AF61A /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AD8F29A72E841368008AF61A /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+		AD8F29AD2E847DC2008AF61A /* SwiftKeychainWrapper */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AD8F29AC2E847DB8008AF61A /* XCRemoteSwiftPackageReference "SwiftKeychainWrapper" */;
+			productName = SwiftKeychainWrapper;
+		};
 		ADD6A2262E7C417B00974EF0 /* ProgressHUD */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = ADD6A2252E7C3F2D00974EF0 /* XCRemoteSwiftPackageReference "ProgressHUD" */;

@@ -1,5 +1,5 @@
 import UIKit
-import Kingfisher   // понадобится для загрузки аватара
+import Kingfisher
 
 final class ProfileViewController: UIViewController {
     
@@ -60,9 +60,22 @@ final class ProfileViewController: UIViewController {
             let profileImageURL = ProfileImageService.shared.avatarURL,
             let url = URL(string: profileImageURL)
         else { return }
-        
-        // обновляем картинку с помощью Kingfisher
-        userPickVeiw.kf.setImage(with: url, placeholder: UIImage(systemName: "person.crop.circle.fill"))
+
+        let placeholder = UIImage(named: "avatar")
+            ?? UIImage(systemName: "person.crop.circle.fill")
+
+        let processor = RoundCornerImageProcessor(cornerRadius: 35)
+
+        userPickVeiw.kf.indicatorType = .activity
+        userPickVeiw.kf.setImage(
+            with: url,
+            placeholder: placeholder,
+            options: [
+                .processor(processor),
+                .scaleFactor(UIScreen.main.scale),
+                .cacheOriginalImage
+            ]
+        )
     }
     
     // MARK: - Setup View

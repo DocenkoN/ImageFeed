@@ -49,12 +49,15 @@ struct ProfileResult: Codable {
 final class ProfileService {
     static let shared = ProfileService()
     private init() {}
-
+    
     private var currentTask: URLSessionTask?
     private(set) var profile: Profile?
-
+    
     func fetchProfile(username: String, completion: @escaping (Result<Profile, Error>) -> Void) {
         currentTask?.cancel()
-
+        
         guard let request = makeProfileRequest(username: username) else {
             print("[ProfileService]: Ошибка — не удалось создать URLRequest для пользователя \(username)")
+        }
+    }
+}
