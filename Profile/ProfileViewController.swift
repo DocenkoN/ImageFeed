@@ -1,6 +1,7 @@
 import UIKit
+import Kingfisher   // понадобится для загрузки аватара
 
-class ProfileViewController: UIViewController {
+final class ProfileViewController: UIViewController {
     
     private var userPick = UIImage()
     private var userPickVeiw = UIImageView()
@@ -9,48 +10,92 @@ class ProfileViewController: UIViewController {
     private var loginLabel = UILabel()
     private var descriptionLabel = UILabel()
     
-    private let mockName = "Екатерина Новикова"
-    private let mockLoginName = "@ekaterina_novikova"
+    private let mockName = "Иван Иванов"
+    private let mockLoginName = "@ivan_ivanov"
     private let mockDescriptionLabel = "Hello, world!"
+    
+    // MARK: - Notification Observer
+    private var profileImageServiceObserver: NSObjectProtocol?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
         setupUIObjects()
         setupConstraints()
+        
+        // читаем профиль из profileService
+        if let profile = ProfileService.shared.profile {
+            updateProfileDetails(profile: profile)
+        }
+        
+        // подписка на обновление аватара
+        profileImageServiceObserver = NotificationCenter.default.addObserver(
+            forName: ProfileImageService.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            self.updateAvatar()
+        }
+        
+        // обновляем аватар, если он уже был загружен
+        updateAvatar()
     }
     
+    deinit {
+        if let observer = profileImageServiceObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+    
+    // MARK: - Update UI from Profile
+    private func updateProfileDetails(profile: Profile) {
+        nameLabel.text = profile.name
+        loginLabel.text = profile.loginName
+        descriptionLabel.text = profile.bio
+    }
+    
+    private func updateAvatar() {
+        guard
+            let profileImageURL = ProfileImageService.shared.avatarURL,
+            let url = URL(string: profileImageURL)
+        else { return }
+        
+        // обновляем картинку с помощью Kingfisher
+        userPickVeiw.kf.setImage(with: url, placeholder: UIImage(systemName: "person.crop.circle.fill"))
+    }
+    
+    // MARK: - Setup View
     private func setupView() {
         view.contentMode = .scaleToFill
         view.backgroundColor = UIColor(named: "YP Black (iOS)")
     }
     
-    // UI
-    
+    // MARK: - UI
     private func setupUIObjects() {
         setupUserPickVeiw()
         setupLogoutButton()
         setupNameLabel()
         setupLoginLabel()
         setupDescriptionLabel()
-        
-        
     }
+    
     private func setupUserPickVeiw() {
         userPick = UIImage(named: "usepPick")
-            ?? UIImage(systemName: "person.crop.circle.fill")
-            ?? UIImage()
-
+        ?? UIImage(systemName: "person.crop.circle.fill")
+        ?? UIImage()
+        
         userPickVeiw = UIImageView(image: userPick)
-        userPickVeiw.layer.masksToBounds = false
+        userPickVeiw.layer.masksToBounds = true
         userPickVeiw.layer.cornerRadius = 35
-        userPickVeiw.contentMode = .scaleAspectFit
+        userPickVeiw.contentMode = .scaleAspectFill
         userPickVeiw.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(userPickVeiw)
     }
-
+    
     private func setupLogoutButton() {
-        let image = UIImage(named: "logOut")?.withRenderingMode(.alwaysOriginal) ?? UIImage(systemName: "arrow.backward")!
+        let image = UIImage(named: "logOut")?.withRenderingMode(.alwaysOriginal)
+        ?? UIImage(systemName: "arrow.backward")
         
         logoutButton = UIButton(type: .custom)
         logoutButton.setImage(image, for: .normal)
@@ -88,8 +133,7 @@ class ProfileViewController: UIViewController {
         view.addSubview(descriptionLabel)
     }
     
-    // констрейны
-    
+    // MARK: - Constraints
     private func setupConstraints() {
         setupConstraintsUsepPick()
         setupConstraintsLogoutButton()
@@ -106,6 +150,7 @@ class ProfileViewController: UIViewController {
             userPickVeiw.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 32),
         ])
     }
+    
     private func setupConstraintsLogoutButton() {
         NSLayoutConstraint.activate([
             logoutButton.heightAnchor.constraint(equalToConstant: 44),
@@ -114,15 +159,15 @@ class ProfileViewController: UIViewController {
             logoutButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
         ])
     }
-        
+    
     private func setupConstraintsNameLabel() {
         NSLayoutConstraint.activate([
-            nameLabel.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: 16),
+            nameLabel.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
             nameLabel.leadingAnchor.constraint(equalTo: userPickVeiw.leadingAnchor),
             nameLabel.topAnchor.constraint(equalTo: userPickVeiw.bottomAnchor, constant: 8),
         ])
     }
-        
+    
     private func setupConstraintsLoginNameLabel() {
         NSLayoutConstraint.activate([
             loginLabel.trailingAnchor.constraint(equalTo: nameLabel.trailingAnchor),
@@ -130,7 +175,7 @@ class ProfileViewController: UIViewController {
             loginLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 8),
         ])
     }
-        
+    
     private func setupConstraintsDescriptionLabel() {
         NSLayoutConstraint.activate([
             descriptionLabel.trailingAnchor.constraint(equalTo: nameLabel.trailingAnchor),
@@ -138,7 +183,9 @@ class ProfileViewController: UIViewController {
             descriptionLabel.topAnchor.constraint(equalTo: loginLabel.bottomAnchor, constant: 8),
         ])
     }
+    
+    // MARK: - Actions
+    @objc private func didTapLogoutButton(_ sender: Any) {
         
-    //
-    @objc private func didTapLogoutButton(_ sender: Any) {}
+    }
 }

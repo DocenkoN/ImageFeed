@@ -22,6 +22,7 @@
 		ADBA72F62E69C8F700C41007 /* SplashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADBA72F52E69C8F700C41007 /* SplashViewController.swift */; };
 		ADBA72F72E69C8F700C41007 /* SplashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADBA72F52E69C8F700C41007 /* SplashViewController.swift */; };
 		ADD6A2272E7C417B00974EF0 /* ProgressHUD in Frameworks */ = {isa = PBXBuildFile; productRef = ADD6A2262E7C417B00974EF0 /* ProgressHUD */; };
+		ADF7EC432E7ECEFB00B16EA9 /* UIBlockingProgressHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADF7EC422E7ECEFB00B16EA9 /* UIBlockingProgressHUD.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +55,7 @@
 		ADBA72EC2E69A87D00C41007 /* OAuth2TokenStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuth2TokenStorage.swift; sourceTree = "<group>"; };
 		ADBA72EF2E69A89F00C41007 /* OAuth2ResponseBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuth2ResponseBody.swift; sourceTree = "<group>"; };
 		ADBA72F52E69C8F700C41007 /* SplashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashViewController.swift; sourceTree = "<group>"; };
+		ADF7EC422E7ECEFB00B16EA9 /* UIBlockingProgressHUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIBlockingProgressHUD.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -67,6 +69,8 @@
 		AD401CB52E54AB6C00711382 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				ProfileImageService.swift,
+				ProfileService.swift,
 				ProfileViewController.swift,
 			);
 			target = AD1DA9412E44B12A00E501B5 /* ImageFeed */;
@@ -141,6 +145,7 @@
 		AD1DA9392E44B12A00E501B5 = {
 			isa = PBXGroup;
 			children = (
+				ADF7EC412E7ECED900B16EA9 /* UIBlockingProgressHUD */,
 				ADBA72EB2E69A86800C41007 /* OAuth2 */,
 				AD8AFB3F2E60C19500922AD3 /* Auth */,
 				AD8AFB3E2E607F3500922AD3 /* SingleImageViewController */,
@@ -207,6 +212,14 @@
 				ADBA72EF2E69A89F00C41007 /* OAuth2ResponseBody.swift */,
 			);
 			path = OAuth2;
+			sourceTree = "<group>";
+		};
+		ADF7EC412E7ECED900B16EA9 /* UIBlockingProgressHUD */ = {
+			isa = PBXGroup;
+			children = (
+				ADF7EC422E7ECEFB00B16EA9 /* UIBlockingProgressHUD.swift */,
+			);
+			path = UIBlockingProgressHUD;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -366,6 +379,7 @@
 				AD8AFB3D2E606C0900922AD3 /* Constants.swift in Sources */,
 				AD4844152E589B2200279658 /* SingleImageViewController.swift in Sources */,
 				ADBA72E62E65CE3F00C41007 /* OAuth2Service.swift in Sources */,
+				ADF7EC432E7ECEFB00B16EA9 /* UIBlockingProgressHUD.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

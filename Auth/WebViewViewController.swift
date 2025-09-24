@@ -1,8 +1,6 @@
 import UIKit
 import WebKit
 
-
-
 protocol WebViewViewControllerDelegate: AnyObject {
     func webViewViewController(_ viewController: WebViewViewController, didAuthenticateWithCode authorizationCode: String)
     func webViewViewControllerDidCancel(_ viewController: WebViewViewController)
@@ -19,7 +17,8 @@ final class WebViewViewController: UIViewController {
     }()
 
     weak var delegate: WebViewViewControllerDelegate?
-    private var progressObservation: NSKeyValueObservation?
+
+    private var estimatedProgressObservation: NSKeyValueObservation?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,10 +27,7 @@ final class WebViewViewController: UIViewController {
         loadAuthorizationPage()
     }
 
-    deinit {
-        progressObservation = nil
-    }
-
+    // MARK: - UI
     private func setupUserInterface() {
         view.backgroundColor = .systemBackground
         webView.translatesAutoresizingMaskIntoConstraints = false
@@ -58,17 +54,38 @@ final class WebViewViewController: UIViewController {
         )
     }
 
+    // MARK: - Прогресс
     private func setupProgressObservation() {
-        progressObservation = webView.observe(\.estimatedProgress, options: [.new]) { [weak self] _, _ in
-            self?.updateProgressView()
+        estimatedProgressObservation = webView.observe(
+            \.estimatedProgress,
+            options: []
+        ) { [weak self] _, _ in
+            guard let self = self else { return }
+            self.updateProgressView()
         }
         updateProgressView()
     }
 
+    private func updateProgressView() {
+        let progress = Float(webView.estimatedProgress)
+        progressView.setProgress(progress, animated: true)
+
+        let shouldHide = abs(webView.estimatedProgress - 1.0) <= 0.0001
+        if shouldHide {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+                self?.progressView.isHidden = true
+            }
+        } else {
+            progressView.isHidden = false
+        }
+    }
+
+    // MARK: - Действия
     @objc private func didTapCloseButton() {
         delegate?.webViewViewControllerDidCancel(self)
     }
 
+    // MARK: - Загрузка страницы
     private func loadAuthorizationPage() {
         do {
             let authorizationURL = try makeAuthorizationURL()
@@ -95,19 +112,7 @@ final class WebViewViewController: UIViewController {
         return url
     }
 
-    private func updateProgressView() {
-        let progress = Float(webView.estimatedProgress)
-        progressView.setProgress(progress, animated: true)
-        let shouldHide = abs(webView.estimatedProgress - 1.0) <= 0.0001
-        if shouldHide {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
-                self?.progressView.isHidden = true
-            }
-        } else {
-            progressView.isHidden = false
-        }
-    }
-
+    // MARK: - Код авторизации
     private func extractAuthorizationCode(from url: URL) -> String? {
         if url.absoluteString.starts(with: Constants.redirectURI),
            let urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false),
@@ -118,6 +123,7 @@ final class WebViewViewController: UIViewController {
     }
 }
 
+// MARK: - WKNavigationDelegate
 extension WebViewViewController: WKNavigationDelegate {
     func webView(_ webView: WKWebView,
                  decidePolicyFor navigationAction: WKNavigationAction,
@@ -132,3 +138,24 @@ extension WebViewViewController: WKNavigationDelegate {
     }
 }
 
+extension URLSession {
+    func object<T: Decodable>(
+        for request: URLRequest,
+        completion: @escaping (Result<T, Error>) -> Void
+    ) -> URLSessionTask {
+        let task = data(for: request) { result in
+            switch result {
+            case .success(let data):
+                do {
+                    let decodedObject = try JSONDecoder().decode(T.self, from: data)
+                    completion(.success(decodedObject))
+                } catch {
+                    completion(.failure(NetworkError.decodingError(error)))
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+        return task
+    }
+}
