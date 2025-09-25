@@ -1,6 +1,6 @@
 import Foundation
 
-// MARK: - Модель для декодирования JSON ответа
+// Модель для декодирования JSON ответа
 struct UserResult: Codable {
     let profileImage: ProfileImage
 
@@ -13,7 +13,7 @@ struct UserResult: Codable {
     }
 }
 
-// MARK: - Сервис для загрузки аватара
+// Сервис для загрузки аватара
 final class ProfileImageService {
     static let didChangeNotification = Notification.Name(rawValue: "ProfileImageProviderDidChange")
 
@@ -33,7 +33,7 @@ final class ProfileImageService {
 
         guard let request = makeRequest(username: username) else {
             print("[ProfileImageService]: Ошибка — не удалось создать URLRequest для пользователя \(username)")
-            completion(.failure(.invalidRequest))
+            completion(.failure(.invalidResponse))
             return
         }
 
@@ -44,6 +44,7 @@ final class ProfileImageService {
             case .success(let userResult):
                 let urlString = userResult.profileImage.small
                 self?.avatarURL = urlString
+                print("[ProfileImageService]: Успех - avatar URL получен: \(urlString)")
                 completion(.success(urlString))
 
                 NotificationCenter.default.post(
@@ -53,7 +54,20 @@ final class ProfileImageService {
                 )
 
             case .failure(let error):
-                print("[ProfileImageService]: Ошибка загрузки аватарки — \(error)")
+                switch error {
+                case .httpStatus(let code, _):
+                    print("[ProfileImageService]: NetworkError - httpStatus код ошибки \(code)")
+                case .urlRequestError(let e):
+                    print("[ProfileImageService]: NetworkError - ошибка запроса: \(e.localizedDescription)")
+                case .invalidResponse:
+                    print("[ProfileImageService]: NetworkError - некорректный ответ сервера")
+                case .noData:
+                    print("[ProfileImageService]: NetworkError - отсутствуют данные")
+                case .decodingError(let e):
+                    print("[ProfileImageService]: Ошибка декодирования: \(e.localizedDescription)")
+                case .urlSessionError:
+                    print("[ProfileImageService]: NetworkError - ошибка сессии")
+                }
                 completion(.failure(error))
             }
         }

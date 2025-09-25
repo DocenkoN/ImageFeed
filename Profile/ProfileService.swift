@@ -6,7 +6,7 @@ enum ProfileServiceError: Error {
     case decodingError
 }
 
-// MARK: - UI-модель профиля
+// UI-модель профиля
 struct Profile {
     let username: String
     let name: String
@@ -23,7 +23,7 @@ struct Profile {
     }
 }
 
-// MARK: - Модель для декодирования JSON от API
+// Модель для декодирования JSON от API
 struct ProfileResult: Codable {
     let username: String
     let firstName: String?
@@ -38,7 +38,7 @@ struct ProfileResult: Codable {
     }
 }
 
-// MARK: - Сервис для загрузки профиля
+// Сервис для загрузки профиля
 final class ProfileService {
     static let shared = ProfileService()
     private init() {}
@@ -50,43 +50,43 @@ final class ProfileService {
         currentTask?.cancel()
 
         guard let request = makeRequest() else {
-            print("[ProfileService]: Ошибка — не удалось создать запрос /me")
+            print("[ProfileService]: Ошибка - не удалось создать запрос /me")
             completion(.failure(ProfileServiceError.invalidRequest))
             return
         }
 
-        currentTask = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+        currentTask = URLSession.shared.objectTask(for: request) { [weak self] (result: Result<ProfileResult, NetworkError>) in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 self.currentTask = nil
 
-                if let error = error {
-                    print("[ProfileService]: Ошибка сети — \(error.localizedDescription)")
-                    completion(.failure(error))
-                    return
-                }
-
-                guard
-                    let httpResponse = response as? HTTPURLResponse,
-                    (200...299).contains(httpResponse.statusCode),
-                    let data = data
-                else {
-                    print("[ProfileService]: Ошибка ответа сервера")
-                    completion(.failure(ProfileServiceError.invalidResponse))
-                    return
-                }
-
-                do {
-                    let profileResult = try JSONDecoder().decode(ProfileResult.self, from: data)
+                switch result {
+                case .success(let profileResult):
                     let profile = Profile(from: profileResult)
                     self.profile = profile
                     completion(.success(profile))
-                } catch {
-                    print("[ProfileService]: Ошибка декодирования — \(error.localizedDescription)")
-                    completion(.failure(ProfileServiceError.decodingError))
+
+                case .failure(let error):
+                    // Логируем в единообразном формате
+                    switch error {
+                    case .httpStatus(let code, _):
+                        print("[ProfileService]: NetworkError - httpStatus код ошибки \(code)")
+                    case .urlRequestError(let e):
+                        print("[ProfileService]: NetworkError - ошибка запроса: \(e.localizedDescription)")
+                    case .invalidResponse:
+                        print("[ProfileService]: NetworkError - некорректный ответ сервера")
+                    case .noData:
+                        print("[ProfileService]: NetworkError - отсутствуют данные")
+                    case .decodingError(let e):
+                        print("[ProfileService]: Ошибка декодирования: \(e.localizedDescription)")
+                    case .urlSessionError:
+                        print("[ProfileService]: NetworkError - ошибка сессии")
+                    }
+                    completion(.failure(error))
                 }
             }
         }
+
         currentTask?.resume()
     }
 
@@ -97,11 +97,9 @@ final class ProfileService {
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-
         if let token = OAuth2TokenStorage.shared.token {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
-
         return request
     }
 }

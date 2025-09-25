@@ -8,16 +8,11 @@ final class AuthViewController: UIViewController {
 
     @IBOutlet private weak var loginButton: UIButton?
 
+    // Делегат
     weak var delegate: AuthViewControllerDelegate?
 
     // Блокировка повторного открытия WebView
     private var isFetchingToken = false
-
-    // MARK: - Lifecycle
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        loginButton?.layer.cornerRadius = 8
-    }
 
     // MARK: - Action
     @IBAction private func didTapLogin(_ sender: UIButton) {
@@ -27,12 +22,12 @@ final class AuthViewController: UIViewController {
 
         let webViewController = WebViewViewController()
         webViewController.delegate = self
-
         let navigationController = UINavigationController(rootViewController: webViewController)
         navigationController.modalPresentationStyle = .fullScreen
 
         present(navigationController, animated: true) { [weak self] in
-            self?.isFetchingToken = false
+            guard let self = self else { return }
+            self.isFetchingToken = false
             sender.isEnabled = true
         }
     }
@@ -55,11 +50,12 @@ final class AuthViewController: UIViewController {
                 OAuth2TokenStorage.shared.token = accessToken
                 self.dismiss(animated: true) {
                     self.delegate?.didAuthenticate(self)
+                    NotificationCenter.default.post(name: .init("AuthSuccess"), object: nil)
                 }
 
             case .failure:
                 let alert = UIAlertController(
-                    title: "Что-то пошло не так",
+                    title: "Что-то пошло не так(",
                     message: "Не удалось войти в систему",
                     preferredStyle: .alert
                 )
@@ -82,3 +78,4 @@ extension AuthViewController: WebViewViewControllerDelegate {
         viewController.dismiss(animated: true)
     }
 }
+
