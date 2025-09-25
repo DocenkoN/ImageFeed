@@ -29,20 +29,12 @@ struct ProfileResult: Codable {
     let firstName: String?
     let lastName: String?
     let bio: String?
-    let profileImage: ProfileImage?
 
     enum CodingKeys: String, CodingKey {
         case username
         case firstName = "first_name"
         case lastName = "last_name"
         case bio
-        case profileImage = "profile_image"
-    }
-
-    struct ProfileImage: Codable {
-        let small: String?
-        let medium: String?
-        let large: String?
     }
 }
 
@@ -50,66 +42,66 @@ struct ProfileResult: Codable {
 final class ProfileService {
     static let shared = ProfileService()
     private init() {}
-    
+
     private var currentTask: URLSessionTask?
     private(set) var profile: Profile?
-    
-    func fetchProfile(username: String, completion: @escaping (Result<Profile, Error>) -> Void) {
+
+    func fetchProfile(completion: @escaping (Result<Profile, Error>) -> Void) {
         currentTask?.cancel()
-        
-        guard let request = makeRequest(username: username) else {
-            print("[ProfileService]: Ошибка — не удалось создать URLRequest для пользователя \(username)")
+
+        guard let request = makeRequest() else {
+            print("[ProfileService]: Ошибка — не удалось создать запрос /me")
             completion(.failure(ProfileServiceError.invalidRequest))
             return
         }
-        
+
         currentTask = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 self.currentTask = nil
-                
+
                 if let error = error {
+                    print("[ProfileService]: Ошибка сети — \(error.localizedDescription)")
                     completion(.failure(error))
                     return
                 }
-                
+
                 guard
                     let httpResponse = response as? HTTPURLResponse,
                     (200...299).contains(httpResponse.statusCode),
                     let data = data
                 else {
+                    print("[ProfileService]: Ошибка ответа сервера")
                     completion(.failure(ProfileServiceError.invalidResponse))
                     return
                 }
-                
+
                 do {
                     let profileResult = try JSONDecoder().decode(ProfileResult.self, from: data)
                     let profile = Profile(from: profileResult)
                     self.profile = profile
                     completion(.success(profile))
                 } catch {
+                    print("[ProfileService]: Ошибка декодирования — \(error.localizedDescription)")
                     completion(.failure(ProfileServiceError.decodingError))
                 }
             }
         }
         currentTask?.resume()
     }
-    
-    // MARK: - makeRequest
-    private func makeRequest(username: String) -> URLRequest? {
-        guard let url = URL(string: "https://api.unsplash.com/users/\(username)") else {
-            print("[ProfileService]: Ошибка — некорректный URL для пользователя \(username)")
+
+    private func makeRequest() -> URLRequest? {
+        guard let url = URL(string: "https://api.unsplash.com/me") else {
             return nil
         }
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        
+
         if let token = OAuth2TokenStorage.shared.token {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
-        
+
         return request
     }
 }
-

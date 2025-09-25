@@ -1,13 +1,23 @@
 import UIKit
 
+protocol AuthViewControllerDelegate: AnyObject {
+    func didAuthenticate(_ viewController: AuthViewController)
+}
+
 final class AuthViewController: UIViewController {
 
     @IBOutlet private weak var loginButton: UIButton?
 
+    weak var delegate: AuthViewControllerDelegate?
+
     // Блокировка повторного открытия WebView
     private var isFetchingToken = false
 
-    var onAuthorizationFinished: (() -> Void)?
+    // MARK: - Lifecycle
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        loginButton?.layer.cornerRadius = 8
+    }
 
     // MARK: - Action
     @IBAction private func didTapLogin(_ sender: UIButton) {
@@ -15,12 +25,13 @@ final class AuthViewController: UIViewController {
         isFetchingToken = true
         sender.isEnabled = false
 
-        let webVC = WebViewViewController()
-        webVC.delegate = self
-        let navController = UINavigationController(rootViewController: webVC)
-        navController.modalPresentationStyle = .fullScreen
+        let webViewController = WebViewViewController()
+        webViewController.delegate = self
 
-        present(navController, animated: true) { [weak self] in
+        let navigationController = UINavigationController(rootViewController: webViewController)
+        navigationController.modalPresentationStyle = .fullScreen
+
+        present(navigationController, animated: true) { [weak self] in
             self?.isFetchingToken = false
             sender.isEnabled = true
         }
@@ -43,8 +54,7 @@ final class AuthViewController: UIViewController {
             case .success(let accessToken):
                 OAuth2TokenStorage.shared.token = accessToken
                 self.dismiss(animated: true) {
-                    self.onAuthorizationFinished?()
-                    NotificationCenter.default.post(name: .init("AuthSuccess"), object: nil)
+                    self.delegate?.didAuthenticate(self)
                 }
 
             case .failure:
@@ -60,6 +70,7 @@ final class AuthViewController: UIViewController {
     }
 }
 
+// MARK: - WebViewViewControllerDelegate
 extension AuthViewController: WebViewViewControllerDelegate {
     func webViewViewController(_ viewController: WebViewViewController, didAuthenticateWithCode code: String) {
         viewController.dismiss(animated: true) { [weak self] in
@@ -71,10 +82,3 @@ extension AuthViewController: WebViewViewControllerDelegate {
         viewController.dismiss(animated: true)
     }
 }
-
-
-
-
-
-
-

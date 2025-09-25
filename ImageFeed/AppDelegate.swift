@@ -12,6 +12,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
 
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        let appearance = UITabBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = UIColor(named: "YP Black (iOS)")
+            appearance.selectionIndicatorImage = UIImage()
+        
+            UITabBar.appearance().standardAppearance = appearance
+        if #available(iOS 15.0, *) {
+            UITabBar.appearance().scrollEdgeAppearance = appearance
+        }
+        return true
+    }
+
+    // MARK: UISceneSession Lifecycle
+
     func application(
        _ application: UIApplication,
        configurationForConnecting connectingSceneSession: UISceneSession,
@@ -23,14 +38,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
        )
        sceneConfiguration.delegateClass = SceneDelegate.self   // 2
        return sceneConfiguration
-    } 
-
-    // MARK: UISceneSession Lifecycle
-
-    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
-        // Called when a new scene session is being created.
-        // Use this method to select a configuration to create the new scene with.
-        return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }
 
     func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
