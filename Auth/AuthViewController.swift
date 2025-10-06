@@ -1,71 +1,81 @@
 import UIKit
 
+protocol AuthViewControllerDelegate: AnyObject {
+    func didAuthenticate(_ viewController: AuthViewController)
+}
+
 final class AuthViewController: UIViewController {
 
     @IBOutlet private weak var loginButton: UIButton?
+
+    // Делегат
+    weak var delegate: AuthViewControllerDelegate?
+
+    // Блокировка повторного открытия WebView
     private var isFetchingToken = false
 
-    var onAuthorizationFinished: (() -> Void)?
-
+    // MARK: - Action
     @IBAction private func didTapLogin(_ sender: UIButton) {
-        guard !isFetchingToken else { return }
+        guard !isFetchingToken else { return } // не даём открыть повторно
         isFetchingToken = true
         sender.isEnabled = false
 
-        let webViewViewController = WebViewViewController()
-        webViewViewController.delegate = self
-        let navigationController = UINavigationController(rootViewController: webViewViewController)
+        let webViewController = WebViewViewController()
+        webViewController.delegate = self
+        let navigationController = UINavigationController(rootViewController: webViewController)
         navigationController.modalPresentationStyle = .fullScreen
 
         present(navigationController, animated: true) { [weak self] in
-            self?.isFetchingToken = false
+            guard let self = self else { return }
+            self.isFetchingToken = false
             sender.isEnabled = true
         }
     }
 
-    private func exchangeAuthorizationCodeForToken(_ authorizationCode: String) {
-        guard !isFetchingToken else { return }
+    // MARK: - OAuth
+    private func exchangeAuthorizationCodeForToken(_ code: String) {
         isFetchingToken = true
         loginButton?.isEnabled = false
+        UIBlockingProgressHUD.show()
 
-        OAuth2Service.shared.fetchOAuthToken(code: authorizationCode) { [weak self] result in
+        OAuth2Service.shared.fetchOAuthToken(code) { [weak self] result in
             guard let self = self else { return }
-            DispatchQueue.main.async {
-                self.isFetchingToken = false
-                self.loginButton?.isEnabled = true
 
-                switch result {
-                case .success(let accessToken):
-                    OAuth2TokenStorage.shared.token = accessToken
-                    self.dismiss(animated: true) {
-                        self.onAuthorizationFinished?()
-                        NotificationCenter.default.post(name: .init("AuthSuccess"), object: nil)
-                    }
-                case .failure(let error):
-                    let alertController = UIAlertController(
-                        title: "Ошибка авторизации",
-                        message: error.localizedDescription,
-                        preferredStyle: .alert
-                    )
-                    alertController.addAction(UIAlertAction(title: "OK", style: .default))
-                    self.present(alertController, animated: true)
+            UIBlockingProgressHUD.dismiss()
+            self.isFetchingToken = false
+            self.loginButton?.isEnabled = true
+
+            switch result {
+            case .success(let accessToken):
+                OAuth2TokenStorage.shared.token = accessToken
+                self.dismiss(animated: true) {
+                    self.delegate?.didAuthenticate(self)
+                    NotificationCenter.default.post(name: .init("AuthSuccess"), object: nil)
                 }
+
+            case .failure:
+                let alert = UIAlertController(
+                    title: "Что-то пошло не так(",
+                    message: "Не удалось войти в систему",
+                    preferredStyle: .alert
+                )
+                alert.addAction(UIAlertAction(title: "Ок", style: .default))
+                self.present(alert, animated: true)
             }
         }
     }
 }
 
+// MARK: - WebViewViewControllerDelegate
 extension AuthViewController: WebViewViewControllerDelegate {
-    func webViewViewController(_ viewController: WebViewViewController, didAuthenticateWithCode authorizationCode: String) {
-        exchangeAuthorizationCodeForToken(authorizationCode)
+    func webViewViewController(_ viewController: WebViewViewController, didAuthenticateWithCode code: String) {
+        viewController.dismiss(animated: true) { [weak self] in
+            self?.exchangeAuthorizationCodeForToken(code)
+        }
     }
 
     func webViewViewControllerDidCancel(_ viewController: WebViewViewController) {
         viewController.dismiss(animated: true)
     }
 }
-
-
-
-
 
