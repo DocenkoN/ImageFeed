@@ -39,6 +39,7 @@ final class ImagesListCell: UITableViewCell {
 
         dateLabel.text = nil
         delegate = nil
+        likeButton.isEnabled = true
     }
 
     // MARK: - Configure
@@ -51,22 +52,18 @@ final class ImagesListCell: UITableViewCell {
 
         setIsLiked(photo.isLiked)
 
-        let placeholder = UIImage(named: "placeholder")
         cellImage.kf.indicatorType = .activity
-
+        let placeholder = UIImage(named: "placeholder")
         if let url = URL(string: photo.thumbImageURL) {
             let targetSize = CGSize(width: bounds.width, height: max(bounds.height, 200))
             let processor = DownsamplingImageProcessor(size: targetSize)
-
             cellImage.kf.setImage(
                 with: url,
                 placeholder: placeholder,
-                options: [
-                    .processor(processor),
-                    .scaleFactor(UIScreen.main.scale),
-                    .transition(.fade(0.2)),
-                    .cacheOriginalImage
-                ],
+                options: [.processor(processor),
+                          .scaleFactor(UIScreen.main.scale),
+                          .transition(.fade(0.2)),
+                          .cacheOriginalImage],
                 completionHandler: { [weak self] _ in
                     self?.applyGradientToImage()
                 }
@@ -83,6 +80,10 @@ final class ImagesListCell: UITableViewCell {
         likeButton.accessibilityValue = isLiked ? "liked" : "not liked"
     }
 
+    func setLikeButtonEnabled(_ enabled: Bool) {
+        likeButton.isEnabled = enabled
+    }
+
     // MARK: - Private
     private func applyGradientToImage() {
         gradientLayer?.removeFromSuperlayer()
@@ -97,8 +98,7 @@ final class ImagesListCell: UITableViewCell {
             width: cellImage.bounds.width,
             height: gradientHeight
         )
-        g.colors = [UIColor.clear.cgColor,
-                    gradientColor.withAlphaComponent(0.55).cgColor]
+        g.colors = [UIColor.clear.cgColor, gradientColor.withAlphaComponent(0.55).cgColor]
         g.locations = [0.0, 1.0]
         cellImage.layer.addSublayer(g)
         gradientLayer = g
