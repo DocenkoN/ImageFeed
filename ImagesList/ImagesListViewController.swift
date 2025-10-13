@@ -163,11 +163,8 @@ extension ImagesListViewController: ImagesListCellDelegate {
             DispatchQueue.main.async {
                 switch result {
                 case .success:
-                    // Сервис сам обновит массив и пришлёт notification с updatedIndex,
-                    // где мы обновим UI, включим кнопку и спрячем HUD.
                     break
                 case .failure:
-                    // Ошибка: снимаем HUD, включаем кнопку, откатываем визуал
                     UIBlockingProgressHUD.dismiss()
                     if let visibleCell = self.tableView.cellForRow(at: indexPath) as? ImagesListCell {
                         visibleCell.setIsLiked(photo.isLiked) // вернуть прежнее
