@@ -17,23 +17,20 @@ struct Photo {
 // MARK: - Сервис ленты
 final class ImagesListService {
 
-    // Можно использовать как синглтон при логауте
     static let shared = ImagesListService()
 
-    // Публичные данные и нотификация
     private(set) var photos: [Photo] = []
     static let didChangeNotification = Notification.Name("ImagesListServiceDidChange")
 
-    // Приватное состояние
     private var lastLoadedPage: Int?
-    private var pagingTask: URLSessionTask?                // текущая задача постраничной загрузки
-    private var likeTasks: [String: URLSessionTask] = [:]  // задачи лайков по photoId
+    private var pagingTask: URLSessionTask?
+    private var likeTasks: [String: URLSessionTask] = [:]
     private let urlSession: URLSession = .shared
 
     // MARK: - DTO / Unsplash
     private struct PhotoResult: Decodable {
         let id: String
-        let createdAt: Date?
+        let createdAt: String            // <- String по методичке
         let width: Int
         let height: Int
         let likedByUser: Bool
@@ -58,29 +55,6 @@ final class ImagesListService {
         let thumb: String
     }
 
-    // MARK: - Декодер дат Unsplash
-    private static let decoder: JSONDecoder = {
-        let d = JSONDecoder()
-        d.dateDecodingStrategy = .custom { dec in
-            let c = try dec.singleValueContainer()
-            let s = try c.decode(String.self)
-            let fmts = [
-                "yyyy-MM-dd'T'HH:mm:ssXXXXX",
-                "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX"
-            ]
-            let df = DateFormatter()
-            df.locale = Locale(identifier: "en_US_POSIX")
-            for f in fmts {
-                df.dateFormat = f
-                if let date = df.date(from: s) { return date }
-            }
-            let iso = ISO8601DateFormatter()
-            if let date = iso.date(from: s) { return date }
-            throw DecodingError.dataCorruptedError(in: c, debugDescription: "Unsupported date format: \(s)")
-        }
-        return d
-    }()
-
     // MARK: - Thread helper
     private func onMain(_ work: @escaping () -> Void) {
         if Thread.isMainThread { work() } else { DispatchQueue.main.async(execute: work) }
@@ -89,7 +63,6 @@ final class ImagesListService {
     // MARK: - Публичный API
     var isLoading: Bool { pagingTask != nil }
 
-    /// Сброс состояния (для логаута)
     func reset() {
         pagingTask?.cancel()
         pagingTask = nil
@@ -100,7 +73,6 @@ final class ImagesListService {
         NotificationCenter.default.post(name: ImagesListService.didChangeNotification, object: self)
     }
 
-    /// Загружает следующую страницу фото.
     @discardableResult
     func fetchPhotosNextPage() -> URLSessionTask? {
         guard pagingTask == nil else { return pagingTask }
@@ -129,16 +101,22 @@ final class ImagesListService {
             switch result {
             case .success(let data):
                 do {
-                    let dtos = try Self.decoder.decode([PhotoResult].self, from: data)
+                    // Обычный JSONDecoder без dateDecodingStrategy
+                    let dtos = try JSONDecoder().decode([PhotoResult].self, from: data)
+
+                    // Парсим дату ИМЕННО здесь, через ISO8601DateFormatter
+                    let iso = ISO8601DateFormatter()
                     let newPhotos: [Photo] = dtos.map { dto in
-                        Photo(
+                        let date = iso.date(from: dto.createdAt) // опционал, без форс-unwrap
+
+                        return Photo(
                             id: dto.id,
                             size: CGSize(width: dto.width, height: dto.height),
-                            createdAt: dto.createdAt,
+                            createdAt: date,
                             welcomeDescription: dto.description,
                             thumbImageURL: dto.urls.thumb,
-                            largeImageURL: dto.urls.regular,   // regular — под список
-                            fullImageURL: dto.urls.full,       // ← full для полноэкрана
+                            largeImageURL: dto.urls.regular, // regular — для списка
+                            fullImageURL: dto.urls.full,     // full — для полноэкрана
                             isLiked: dto.likedByUser
                         )
                     }
@@ -163,7 +141,6 @@ final class ImagesListService {
         return pagingTask
     }
 
-    /// Лайк/анлайк фото.
     func changeLike(photoId: String, isLike: Bool, _ completion: @escaping (Result<Void, Error>) -> Void) {
         if likeTasks[photoId] != nil {
             onMain { completion(.success(())) }
@@ -200,7 +177,7 @@ final class ImagesListService {
                             welcomeDescription: p.welcomeDescription,
                             thumbImageURL: p.thumbImageURL,
                             largeImageURL: p.largeImageURL,
-                            fullImageURL: p.fullImageURL,   // не теряем full
+                            fullImageURL: p.fullImageURL,
                             isLiked: !p.isLiked
                         )
                         self.photos[idx] = updated
@@ -208,7 +185,7 @@ final class ImagesListService {
                         NotificationCenter.default.post(
                             name: ImagesListService.didChangeNotification,
                             object: self,
-                            userInfo: ["updatedIndex": idx] // для точечного апдейта в VC
+                            userInfo: ["updatedIndex": idx]
                         )
                     }
                     completion(.success(()))
