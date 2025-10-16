@@ -54,16 +54,21 @@ final class ImagesListCell: UITableViewCell {
 
         cellImage.kf.indicatorType = .activity
         let placeholder = UIImage(named: "placeholder")
-        if let url = URL(string: photo.thumbImageURL) {
+
+       
+        let urlString = photo.thumbImageURL
+        if let url = URL(string: urlString) {
             let targetSize = CGSize(width: bounds.width, height: max(bounds.height, 200))
             let processor = DownsamplingImageProcessor(size: targetSize)
             cellImage.kf.setImage(
                 with: url,
                 placeholder: placeholder,
-                options: [.processor(processor),
-                          .scaleFactor(UIScreen.main.scale),
-                          .transition(.fade(0.2)),
-                          .cacheOriginalImage],
+                options: [
+                    .processor(processor),
+                    .scaleFactor(UIScreen.main.scale),
+                    .transition(.fade(0.2)),
+                    .cacheOriginalImage
+                ],
                 completionHandler: { [weak self] _ in
                     self?.applyGradientToImage()
                 }
@@ -109,3 +114,4 @@ final class ImagesListCell: UITableViewCell {
         delegate?.imagesListCellDidTapLike(self)
     }
 }
+

@@ -30,7 +30,7 @@ final class ImagesListService {
     // MARK: - DTO / Unsplash
     private struct PhotoResult: Decodable {
         let id: String
-        let createdAt: String
+        let createdAt: String        // ← строка, как приходит из JSON
         let width: Int
         let height: Int
         let likedByUser: Bool
@@ -60,6 +60,10 @@ final class ImagesListService {
         if Thread.isMainThread { work() } else { DispatchQueue.main.async(execute: work) }
     }
 
+    private enum DateParsers {
+        static let iso8601 = ISO8601DateFormatter()
+    }
+
     // MARK: - Публичный API
     var isLoading: Bool { pagingTask != nil }
 
@@ -78,7 +82,6 @@ final class ImagesListService {
         guard pagingTask == nil else { return pagingTask }
 
         guard let token = OAuth2TokenStorage.shared.token else {
-            print("[ImagesListService.fetchPhotosNextPage]: precondition failed — no OAuth token")
             assertionFailure("No OAuth token")
             return nil
         }
@@ -103,10 +106,8 @@ final class ImagesListService {
             case .success(let data):
                 do {
                     let dtos = try JSONDecoder().decode([PhotoResult].self, from: data)
-
-                    let iso = ISO8601DateFormatter()
                     let newPhotos: [Photo] = dtos.map { dto in
-                        let date = iso.date(from: dto.createdAt) // опционал, без форс-unwrap
+                        let date = DateParsers.iso8601.date(from: dto.createdAt) // Date?
                         return Photo(
                             id: dto.id,
                             size: CGSize(width: dto.width, height: dto.height),
@@ -128,13 +129,11 @@ final class ImagesListService {
                         )
                     }
                 } catch {
-                    // Единый формат + параметры
-                    print("[ImagesListService.fetchPhotosNextPage]: decode error — page: \(nextPage), bytes: \(data.count), error: \(error)")
+                    print("[ImagesListService] decode error — \(error)")
                 }
 
             case .failure(let error):
-                // Единый формат + параметры
-                print("[ImagesListService.fetchPhotosNextPage]: network error — page: \(nextPage), error: \(error)")
+                print("[ImagesListService] network error — \(error)")
             }
         }
 
@@ -148,12 +147,10 @@ final class ImagesListService {
         }
 
         guard let token = OAuth2TokenStorage.shared.token else {
-            print("[ImagesListService.changeLike]: precondition failed — no OAuth token")
             onMain { completion(.failure(NSError(domain: "NoToken", code: -1))) }
             return
         }
         guard let url = URL(string: "https://api.unsplash.com/photos/\(photoId)/like") else {
-            print("[ImagesListService.changeLike]: bad url — photoId: \(photoId)")
             onMain { completion(.failure(NSError(domain: "BadURL", code: -2))) }
             return
         }
@@ -183,7 +180,6 @@ final class ImagesListService {
                             isLiked: !p.isLiked
                         )
                         self.photos[idx] = updated
-
                         NotificationCenter.default.post(
                             name: ImagesListService.didChangeNotification,
                             object: self,
@@ -194,8 +190,6 @@ final class ImagesListService {
                 }
 
             case .failure(let error):
-                // Единый формат + параметры
-                print("[ImagesListService.changeLike]: network error — photoId: \(photoId), isLike: \(isLike), error: \(error)")
                 self.onMain { completion(.failure(error)) }
             }
         }

@@ -49,7 +49,7 @@ final class ImagesListViewController: UIViewController {
                 return
             }
             let photo = photos[indexPath.row]
-            vc.imageURL = URL(string: photo.fullImageURL)   
+            vc.imageURL = URL(string: photo.fullImageURL)
         } else {
             super.prepare(for: segue, sender: sender)
         }
@@ -71,7 +71,7 @@ final class ImagesListViewController: UIViewController {
             return
         }
 
-        // пагинация
+        // пагинация / сброс
         updateTableViewAnimated()
     }
 
@@ -80,6 +80,10 @@ final class ImagesListViewController: UIViewController {
         let newCount = imagesListService.photos.count
         photos = imagesListService.photos
 
+        if newCount < oldCount {
+            tableView.reloadData()
+            return
+        }
         guard newCount > oldCount else { return }
 
         let toInsert = (oldCount..<newCount).map { IndexPath(row: $0, section: 0) }
@@ -154,7 +158,6 @@ extension ImagesListViewController: ImagesListCellDelegate {
         let photo = photos[indexPath.row]
         let newLike = !photo.isLiked
 
-        // Блокирующий лоадер + блокируем кнопку на время операции
         UIBlockingProgressHUD.show()
         cell.setLikeButtonEnabled(false)
 
