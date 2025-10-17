@@ -14,6 +14,8 @@ final class SplashViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
+        print("[Splash] token is \(oauth2TokenStorage.token == nil ? "nil" : "present")")
+
         if oauth2TokenStorage.token != nil {
             fetchProfile()
         } else {
@@ -37,43 +39,53 @@ final class SplashViewController: UIViewController {
     // MARK: - Navigation
     private func presentAuthViewController() {
         let storyboard = UIStoryboard(name: "Main", bundle: .main)
-        guard let authViewController = storyboard.instantiateViewController(
+        guard let authVC = storyboard.instantiateViewController(
             withIdentifier: "AuthViewController"
         ) as? AuthViewController else {
             assertionFailure("Не удалось найти AuthViewController")
             return
         }
 
-        authViewController.delegate = self
-        authViewController.modalPresentationStyle = .fullScreen
-        present(authViewController, animated: true)
+        authVC.delegate = self
+        authVC.modalPresentationStyle = .fullScreen
+        present(authVC, animated: true)
     }
 
     private func switchToTabBarController() {
-        guard let window = UIApplication.shared.windows.first else {
-            assertionFailure("Неверная конфигурация окна")
-            return
-        }
+        DispatchQueue.main.async {
+            guard
+                let windowScene = UIApplication.shared.connectedScenes
+                    .compactMap({ $0 as? UIWindowScene }).first,
+                let window = windowScene.windows.first
+            else {
+                assertionFailure("Не удалось получить окно/сцену")
+                return
+            }
 
-        let tabBarController = UIStoryboard(name: "Main", bundle: .main)
-            .instantiateViewController(withIdentifier: "TabBarViewController")
-        window.rootViewController = tabBarController
-        window.makeKeyAndVisible()
+            // ВАЖНО: Storyboard ID = "TabBarController"
+            let tabBar = UIStoryboard(name: "Main", bundle: .main)
+                .instantiateViewController(withIdentifier: "TabBarController")
+
+            UIView.transition(with: window, duration: 0.25, options: .transitionCrossDissolve) {
+                window.rootViewController = tabBar
+                window.makeKeyAndVisible()
+            }
+        }
     }
 
     // MARK: - Profile
     private func fetchProfile() {
         profileService.fetchProfile { [weak self] result in
-            guard let self = self else { return }
+            guard let self else { return }
 
             switch result {
             case .success(let profile):
-                print("Профиль загружен: \(profile.name)")
+                print("[Splash] профиль загружен: \(profile.name)")
                 ProfileImageService.shared.fetchProfileImageURL(username: profile.username) { _ in }
                 self.switchToTabBarController()
 
             case .failure(let error):
-                print("Ошибка загрузки профиля: \(error.localizedDescription)")
+                print("[Splash] ошибка загрузки профиля: \(error.localizedDescription)")
                 self.presentAuthViewController()
             }
         }
@@ -83,6 +95,7 @@ final class SplashViewController: UIViewController {
 extension SplashViewController: AuthViewControllerDelegate {
     func didAuthenticate(_ viewController: AuthViewController) {
         viewController.dismiss(animated: true) { [weak self] in
+            print("[Splash] didAuthenticate → fetchProfile()")
             self?.fetchProfile()
         }
     }

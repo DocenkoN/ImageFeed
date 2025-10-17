@@ -24,7 +24,7 @@ struct Profile {
 }
 
 // Модель для декодирования JSON от API
-struct ProfileResult: Codable {
+struct ProfileResult: Decodable {
     let username: String
     let firstName: String?
     let lastName: String?
@@ -46,18 +46,25 @@ final class ProfileService {
     private var currentTask: URLSessionTask?
     private(set) var profile: Profile?
 
+    /// Сброс состояния сервиса (для логаута)
+    func reset() {
+        currentTask?.cancel()
+        currentTask = nil
+        profile = nil
+    }
+
     func fetchProfile(completion: @escaping (Result<Profile, Error>) -> Void) {
         currentTask?.cancel()
 
         guard let request = makeRequest() else {
-            print("[ProfileService]: Ошибка - не удалось создать запрос /me")
-            completion(.failure(ProfileServiceError.invalidRequest))
+            print("[ProfileService]: Ошибка — не удалось создать запрос /me (нет токена или URL)")
+            DispatchQueue.main.async { completion(.failure(ProfileServiceError.invalidRequest)) }
             return
         }
 
         currentTask = URLSession.shared.objectTask(for: request) { [weak self] (result: Result<ProfileResult, NetworkError>) in
+            guard let self = self else { return }
             DispatchQueue.main.async {
-                guard let self = self else { return }
                 self.currentTask = nil
 
                 switch result {
@@ -67,39 +74,44 @@ final class ProfileService {
                     completion(.success(profile))
 
                 case .failure(let error):
-                    // Логируем в единообразном формате
-                    switch error {
-                    case .httpStatus(let code, _):
-                        print("[ProfileService]: NetworkError - httpStatus код ошибки \(code)")
-                    case .urlRequestError(let e):
-                        print("[ProfileService]: NetworkError - ошибка запроса: \(e.localizedDescription)")
-                    case .invalidResponse:
-                        print("[ProfileService]: NetworkError - некорректный ответ сервера")
-                    case .noData:
-                        print("[ProfileService]: NetworkError - отсутствуют данные")
-                    case .decodingError(let e):
-                        print("[ProfileService]: Ошибка декодирования: \(e.localizedDescription)")
-                    case .urlSessionError:
-                        print("[ProfileService]: NetworkError - ошибка сессии")
-                    }
+                    self.log(error)
                     completion(.failure(error))
                 }
             }
         }
 
+
         currentTask?.resume()
     }
 
     private func makeRequest() -> URLRequest? {
-        guard let url = URL(string: "https://api.unsplash.com/me") else {
+        guard
+            let token = OAuth2TokenStorage.shared.token,
+            let url = URL(string: "https://api.unsplash.com/me")
+        else {
             return nil
         }
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        if let token = OAuth2TokenStorage.shared.token {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         return request
+    }
+
+    private func log(_ error: NetworkError) {
+        switch error {
+        case .httpStatus(let code, _):
+            print("[ProfileService]: NetworkError — httpStatus код ошибки \(code)")
+        case .urlRequestError(let e):
+            print("[ProfileService]: NetworkError — ошибка запроса: \(e.localizedDescription)")
+        case .invalidResponse:
+            print("[ProfileService]: NetworkError — некорректный ответ сервера")
+        case .noData:
+            print("[ProfileService]: NetworkError — отсутствуют данные")
+        case .decodingError(let e):
+            print("[ProfileService]: Ошибка декодирования: \(e.localizedDescription)")
+        case .urlSessionError:
+            print("[ProfileService]: NetworkError — ошибка сессии")
+        }
     }
 }

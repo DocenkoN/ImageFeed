@@ -1,14 +1,9 @@
-//
-//  AppDelegate.swift
-//  ImageFeed
-//
-//  Created by Николай Доценко on 07.08.2025.
-//
 
 import UIKit
+import ProgressHUD
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate {
+final class AppDelegate: UIResponder, UIApplicationDelegate {
     
     var window: UIWindow?
     
@@ -16,6 +11,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+        
+        // стилизация ProgressiveHUD
+        ProgressHUD.animationType = .systemActivityIndicator
+        ProgressHUD.colorHUD = .white
+        ProgressHUD.colorAnimation = .black
         
         // Настройка внешнего вида TabBar
         let appearance = UITabBarAppearance()

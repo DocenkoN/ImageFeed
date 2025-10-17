@@ -7,16 +7,11 @@ enum AuthServiceError: Error {
 final class OAuth2Service {
     static let shared = OAuth2Service()
 
-    private let dataStorage = OAuth2TokenStorage()
+    private let dataStorage = OAuth2TokenStorage.shared
     private let urlSession = URLSession.shared
 
-    // Текущий активный запрос
     private var task: URLSessionTask?
-
-    // Код, по которому идёт текущий запрос
     private var lastCode: String?
-
-    // Все замыкания для текущего кода
     private var completionHandlers: [(Result<String, Error>) -> Void] = []
 
     private(set) var authToken: String? {
@@ -29,13 +24,11 @@ final class OAuth2Service {
     func fetchOAuthToken(_ code: String, completion: @escaping (Result<String, Error>) -> Void) {
         assert(Thread.isMainThread)
 
-        // Если запрос уже идёт с этим же кодом, просто добавляем completion
         if lastCode == code {
             completionHandlers.append(completion)
             return
         }
 
-        // Если пришёл новый код, отменяем старый запрос и возвращаем error старым completions
         task?.cancel()
         if !completionHandlers.isEmpty {
             completionHandlers.forEach { $0(.failure(AuthServiceError.invalidRequest)) }
@@ -43,30 +36,24 @@ final class OAuth2Service {
         completionHandlers = [completion]
         lastCode = code
 
-        // Создаём URLRequest
         guard let request = makeOAuthTokenRequest(code: code) else {
             print("[OAuth2Service]: Ошибка — не удалось создать URLRequest для получения токена")
             finish(.failure(AuthServiceError.invalidRequest))
             return
         }
 
-        // Используем objectTask (с декодированием в OAuthTokenResponseBody)
         let objectTask = urlSession.objectTask(for: request) { [weak self] (result: Result<OAuthTokenResponseBody, NetworkError>) in
             DispatchQueue.main.async {
                 guard let self = self else { return }
-
                 defer {
                     self.task = nil
                     self.lastCode = nil
                 }
-
                 switch result {
                 case .success(let decodedData):
                     self.authToken = decodedData.accessToken
                     self.finish(.success(decodedData.accessToken))
-
                 case .failure(let error):
-                    // Логирование ошибки в едином формате
                     switch error {
                     case .httpStatus(let code, _):
                         print("[OAuth2Service]: NetworkError - httpStatus код ошибки \(code)")
@@ -85,19 +72,26 @@ final class OAuth2Service {
                 }
             }
         }
-
         self.task = objectTask
         objectTask.resume()
     }
 
-    // Вызов всех completions и очистка массива
+    func cancelAndReset() {
+        task?.cancel()
+        task = nil
+        lastCode = nil
+        if !completionHandlers.isEmpty {
+            completionHandlers.forEach { $0(.failure(AuthServiceError.invalidRequest)) }
+            completionHandlers.removeAll()
+        }
+    }
+
     private func finish(_ result: Result<String, Error>) {
         let handlers = completionHandlers
         completionHandlers = []
         handlers.forEach { $0(result) }
     }
 
-    // Создание запроса на получение токена
     private func makeOAuthTokenRequest(code: String) -> URLRequest? {
         guard let url = URL(string: "https://unsplash.com/oauth/token") else {
             assertionFailure("Failed to create URL")
@@ -122,9 +116,6 @@ final class OAuth2Service {
 
     private struct OAuthTokenResponseBody: Decodable {
         let accessToken: String
-
-        enum CodingKeys: String, CodingKey {
-            case accessToken = "access_token"
-        }
+        enum CodingKeys: String, CodingKey { case accessToken = "access_token" }
     }
 }
