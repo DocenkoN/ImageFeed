@@ -2,8 +2,8 @@ import UIKit
 import Kingfisher
 
 final class SingleImageViewController: UIViewController {
-    @IBOutlet private var scrollView: UIScrollView!
-    @IBOutlet private var imageView: UIImageView!
+    @IBOutlet private weak var scrollView: UIScrollView!
+    @IBOutlet private weak var imageView: UIImageView!
 
     // сюда передаём URL в prepare(for:)
     var imageURL: URL?
@@ -13,9 +13,7 @@ final class SingleImageViewController: UIViewController {
         scrollView.delegate = self
 
         imageView.contentMode = .scaleAspectFit
-        imageView.kf.indicatorType = .none  // используем общий HUD
-
-        // double-tap для быстрого зума
+        imageView.kf.indicatorType = .none //
         let doubleTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
         doubleTap.numberOfTapsRequired = 2
         scrollView.addGestureRecognizer(doubleTap)
@@ -25,13 +23,13 @@ final class SingleImageViewController: UIViewController {
 
     // MARK: - Actions
     @IBAction private func didTapBackButton(_ sender: Any) {
-        navigationController?.popViewController(animated: true)
+        dismiss(animated: true)
     }
 
     @IBAction private func didTapShareButton(_ sender: UIButton) {
         guard let image = imageView.image else { return }
         let share = UIActivityViewController(activityItems: [image], applicationActivities: nil)
-        present(share, animated: true, completion: nil)
+        present(share, animated: true)
     }
 
     // MARK: - Loading
@@ -73,7 +71,7 @@ final class SingleImageViewController: UIViewController {
         let scrollSize = scrollView.bounds.size
         let hScale = scrollSize.width / image.size.width
         let vScale = scrollSize.height / image.size.height
-        let scaleToFit = min(hScale, vScale)              // важно: min, чтобы влезала целиком
+        let scaleToFit = min(hScale, vScale)
 
         scrollView.minimumZoomScale = scaleToFit
         scrollView.maximumZoomScale = scaleToFit * 3
