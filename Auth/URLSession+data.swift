@@ -49,6 +49,7 @@ extension URLSession {
             }
         }
 
+        task.resume() // ← ОБЯЗАТЕЛЬНО: запускаем запрос
         return task
     }
 
