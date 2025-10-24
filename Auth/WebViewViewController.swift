@@ -8,12 +8,17 @@ protocol WebViewViewControllerDelegate: AnyObject {
 
 public protocol WebViewViewControllerProtocol: AnyObject {
     var presenter: WebViewPresenterProtocol? { get set }
+    func load(request: URLRequest)
+    func setProgressValue(_ newValue: Float)
+    func setProgressHidden(_ isHidden: Bool)
 }
 
 final class WebViewViewController: UIViewController & WebViewViewControllerProtocol {
 
+    // MARK: - MVP
     var presenter: WebViewPresenterProtocol?
 
+    // MARK: - UI
     private let webView: WKWebView = WKWebView()
     private let progressView: UIProgressView = {
         let progressView = UIProgressView(progressViewStyle: .default)
@@ -24,20 +29,40 @@ final class WebViewViewController: UIViewController & WebViewViewControllerProto
 
     weak var delegate: WebViewViewControllerDelegate?
 
-    private var estimatedProgressObservation: NSKeyValueObservation?
+    // MARK: - KVO
+    private let estimatedProgressKeyPath = #keyPath(WKWebView.estimatedProgress)
 
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUserInterface()
-        setupProgressObservation()
-        loadAuthorizationPage()
+        webView.addObserver(self, forKeyPath: estimatedProgressKeyPath, options: .new, context: nil)
+
+        webView.navigationDelegate = self
+        presenter?.viewDidLoad()
+    }
+
+    deinit {
+        webView.removeObserver(self, forKeyPath: estimatedProgressKeyPath, context: nil)
+    }
+
+    // MARK: - WebViewViewControllerProtocol
+    func load(request: URLRequest) {
+        webView.load(request)
+    }
+
+    func setProgressValue(_ newValue: Float) {
+        progressView.setProgress(newValue, animated: true)
+    }
+
+    func setProgressHidden(_ isHidden: Bool) {
+        progressView.isHidden = isHidden
     }
 
     // MARK: - UI
     private func setupUserInterface() {
         view.backgroundColor = .systemBackground
         webView.translatesAutoresizingMaskIntoConstraints = false
-        webView.navigationDelegate = self
         view.addSubview(webView)
         view.addSubview(progressView)
 
@@ -60,70 +85,27 @@ final class WebViewViewController: UIViewController & WebViewViewControllerProto
         )
     }
 
-    // MARK: - Прогресс
-    private func setupProgressObservation() {
-        estimatedProgressObservation = webView.observe(
-            \.estimatedProgress,
-            options: []
-        ) { [weak self] _, _ in
-            guard let self = self else { return }
-            self.updateProgressView()
-        }
-        updateProgressView()
-    }
-
-    private func updateProgressView() {
-        let progress = Float(webView.estimatedProgress)
-        progressView.setProgress(progress, animated: true)
-
-        let shouldHide = abs(webView.estimatedProgress - 1.0) <= 0.0001
-        if shouldHide {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
-                self?.progressView.isHidden = true
-            }
-        } else {
-            progressView.isHidden = false
-        }
-    }
-
-    // MARK: - Действия
+    // MARK: - Actions
     @objc private func didTapCloseButton() {
         delegate?.webViewViewControllerDidCancel(self)
     }
 
-    // MARK: - Загрузка страницы
-    private func loadAuthorizationPage() {
-        do {
-            let authorizationURL = try makeAuthorizationURL()
-            let request = URLRequest(url: authorizationURL)
-            webView.load(request)
-        } catch {
-            print("Ошибка формирования URL для авторизации: \(error)")
+    // MARK: - KVO -> Presenter
+    override func observeValue(forKeyPath keyPath: String?,
+                               of object: Any?,
+                               change: [NSKeyValueChangeKey : Any]?,
+                               context: UnsafeMutableRawPointer?) {
+        if keyPath == estimatedProgressKeyPath {
+            presenter?.didUpdateProgressValue(webView.estimatedProgress)
+        } else {
+            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
     }
 
-    private enum WebViewError: Error {
-        case invalidURL
-    }
-
-    private func makeAuthorizationURL() throws -> URL {
-        var urlComponents = URLComponents(string: WebViewConstants.unsplashAuthorizeURLString)
-        urlComponents?.queryItems = [
-            URLQueryItem(name: "client_id", value: Constants.accessKey),
-            URLQueryItem(name: "redirect_uri", value: Constants.redirectURI),
-            URLQueryItem(name: "response_type", value: "code"),
-            URLQueryItem(name: "scope", value: Constants.accessScope)
-        ]
-        guard let url = urlComponents?.url else { throw WebViewError.invalidURL }
-        return url
-    }
-
-    // MARK: - Код авторизации
-    private func extractAuthorizationCode(from url: URL) -> String? {
-        if url.absoluteString.starts(with: Constants.redirectURI),
-           let urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false),
-           let codeValue = urlComponents.queryItems?.first(where: { $0.name == "code" })?.value {
-            return codeValue
+    // MARK: - Код авторизации через презентер
+    private func code(from navigationAction: WKNavigationAction) -> String? {
+        if let url = navigationAction.request.url {
+            return presenter?.code(from: url)
         }
         return nil
     }
@@ -134,34 +116,11 @@ extension WebViewViewController: WKNavigationDelegate {
     func webView(_ webView: WKWebView,
                  decidePolicyFor navigationAction: WKNavigationAction,
                  decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        if let navigationURL = navigationAction.request.url,
-           let authorizationCode = extractAuthorizationCode(from: navigationURL) {
+        if let authorizationCode = code(from: navigationAction) {
             delegate?.webViewViewController(self, didAuthenticateWithCode: authorizationCode)
             decisionHandler(.cancel)
             return
         }
         decisionHandler(.allow)
-    }
-}
-
-extension URLSession {
-    func object<T: Decodable>(
-        for request: URLRequest,
-        completion: @escaping (Result<T, Error>) -> Void
-    ) -> URLSessionTask {
-        let task = data(for: request) { result in
-            switch result {
-            case .success(let data):
-                do {
-                    let decodedObject = try JSONDecoder().decode(T.self, from: data)
-                    completion(.success(decodedObject))
-                } catch {
-                    completion(.failure(NetworkError.decodingError(error)))
-                }
-            case .failure(let error):
-                completion(.failure(error))
-            }
-        }
-        return task
     }
 }

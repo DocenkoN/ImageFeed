@@ -8,20 +8,26 @@ final class AuthViewController: UIViewController {
 
     @IBOutlet private weak var loginButton: UIButton?
 
-    // Делегат
     weak var delegate: AuthViewControllerDelegate?
 
-    // Блокировка повторного открытия WebView
     private var isFetchingToken = false
 
     // MARK: - Action
     @IBAction private func didTapLogin(_ sender: UIButton) {
-        guard !isFetchingToken else { return } // не даём открыть повторно
+        guard !isFetchingToken else { return }
         isFetchingToken = true
         sender.isEnabled = false
 
         let webViewController = WebViewViewController()
+
+        // Инъекция AuthHelper в презентер (MVP-связка)
+        let authHelper = AuthHelper()
+        let webViewPresenter = WebViewPresenter(authHelper: authHelper)
+        webViewController.presenter = webViewPresenter
+        webViewPresenter.view = webViewController
+
         webViewController.delegate = self
+
         let navigationController = UINavigationController(rootViewController: webViewController)
         navigationController.modalPresentationStyle = .fullScreen
 
@@ -52,7 +58,6 @@ final class AuthViewController: UIViewController {
                     self.delegate?.didAuthenticate(self)
                     NotificationCenter.default.post(name: .init("AuthSuccess"), object: nil)
                 }
-
             case .failure:
                 let alert = UIAlertController(
                     title: "Что-то пошло не так(",
@@ -78,4 +83,3 @@ extension AuthViewController: WebViewViewControllerDelegate {
         viewController.dismiss(animated: true)
     }
 }
-
