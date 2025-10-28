@@ -7,10 +7,14 @@ protocol AuthViewControllerDelegate: AnyObject {
 final class AuthViewController: UIViewController {
 
     @IBOutlet private weak var loginButton: UIButton?
-
     weak var delegate: AuthViewControllerDelegate?
 
     private var isFetchingToken = false
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        loginButton?.accessibilityIdentifier = "Authenticate"
+    }
 
     // MARK: - Action
     @IBAction private func didTapLogin(_ sender: UIButton) {
@@ -20,7 +24,6 @@ final class AuthViewController: UIViewController {
 
         let webViewController = WebViewViewController()
 
-        // Инъекция AuthHelper в презентер (MVP-связка)
         let authHelper = AuthHelper()
         let webViewPresenter = WebViewPresenter(authHelper: authHelper)
         webViewController.presenter = webViewPresenter

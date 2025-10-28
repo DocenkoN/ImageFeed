@@ -108,7 +108,7 @@
         <!--Web View View Controller-->
         <scene sceneID="YjA-yH-kZZ">
             <objects>
-                <viewController id="Fan-9R-IEO" customClass="WebViewViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="WebViewViewController" id="Fan-9R-IEO" customClass="WebViewViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="LRZ-BN-OqC">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -139,10 +139,6 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="hfW-c7-gMh"/>
-                    <connections>
-                        <outlet property="progressView" destination="FlA-JQ-dbG" id="6Rm-Kv-fch"/>
-                        <outlet property="webView" destination="C7C-cW-lWI" id="QEf-DG-AdD"/>
-                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aba-20-UpM" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>

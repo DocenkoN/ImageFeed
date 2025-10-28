@@ -1,8 +1,9 @@
 import Foundation
 import ImageFeed
+@testable import ImageFeed
 
 final class WebViewViewControllerSpy: WebViewViewControllerProtocol {
-    var presenter: Image_Feed.WebViewPresenterProtocol?
+    var presenter: ImageFeed.WebViewPresenterProtocol?
 
     var loadRequestCalled = false
 

@@ -6,7 +6,8 @@ final class WebViewTests: XCTestCase {
     // MARK: - Test 1
     func testViewControllerCallsViewDidLoad() {
         // given
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let storyboard = UIStoryboard(name: "Main", bundle: Bundle(for: WebViewViewController.self))
+
         let viewController = storyboard.instantiateViewController(
             withIdentifier: "WebViewViewController"
         ) as! WebViewViewController
@@ -59,18 +60,26 @@ final class WebViewTests: XCTestCase {
         let authHelper = AuthHelper(configuration: configuration)
 
         // when
-        guard let url = authHelper.authURL() else {
-            XCTFail("authURL() вернул nil")
-            return
+        guard let url = authHelper.authURL(),
+              let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let items = components.queryItems
+        else {
+            return XCTFail("authURL() вернул некорректный URL")
         }
-        let urlString = url.absoluteString
 
         // then
-        XCTAssertTrue(urlString.contains(configuration.authURLString))
-        XCTAssertTrue(urlString.contains(configuration.accessKey))
-        XCTAssertTrue(urlString.contains(configuration.redirectURI))
-        XCTAssertTrue(urlString.contains("code"))
-        XCTAssertTrue(urlString.contains(configuration.accessScope))
+        XCTAssertEqual(components.scheme, "https")
+        XCTAssertEqual(components.host, "unsplash.com")
+        XCTAssertEqual(components.path, "/oauth/authorize")
+
+        func value(_ name: String) -> String? {
+            items.first(where: { $0.name == name })?.value
+        }
+
+        XCTAssertEqual(value("client_id"), configuration.accessKey)
+        XCTAssertEqual(value("redirect_uri"), configuration.redirectURI) // OK: сравнение уже с декодированным значением
+        XCTAssertEqual(value("response_type"), "code")
+        XCTAssertEqual(value("scope"), configuration.accessScope)
     }
 
     // MARK: - Test 5
