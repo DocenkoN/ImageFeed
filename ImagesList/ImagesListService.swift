@@ -1,9 +1,14 @@
 import Foundation
-import CoreGraphics
-import UIKit
 
-// MARK: - UI-модель
-struct Photo {
+// MARK: - Protocol
+protocol ImagesListServiceProtocol {
+    var photos: [Photo] { get }
+    func fetchPhotosNextPage(completion: @escaping (Result<[Photo], Error>) -> Void)
+    func changeLike(photoId: String, isLike: Bool, completion: @escaping (Result<Bool, Error>) -> Void)
+}
+
+// MARK: - Model (под Unsplash)
+struct Photo: Equatable {
     let id: String
     let size: CGSize
     let createdAt: Date?
@@ -11,189 +16,136 @@ struct Photo {
     let thumbImageURL: String
     let largeImageURL: String
     let fullImageURL: String
-    let isLiked: Bool
+    var isLiked: Bool
 }
 
-// MARK: - Сервис ленты
-final class ImagesListService {
+// DTO из Unsplash
+private struct PhotoResult: Decodable {
+    struct Urls: Decodable { let thumb: String; let small: String; let regular: String }
+    struct LikeUser: Decodable { let liked_by_user: Bool }
+    let id: String
+    let width: Int
+    let height: Int
+    let created_at: String?
+    let description: String?
+    let urls: Urls
+    let liked_by_user: Bool
+}
+
+final class ImagesListService: ImagesListServiceProtocol {
 
     static let shared = ImagesListService()
-
-    private(set) var photos: [Photo] = []
     static let didChangeNotification = Notification.Name("ImagesListServiceDidChange")
 
-    private var lastLoadedPage: Int?
-    private var pagingTask: URLSessionTask?
-    private var likeTasks: [String: URLSessionTask] = [:]
-    private let urlSession: URLSession = .shared
+    private let session: URLSession
+    private(set) var photos: [Photo] = []
+    private var isLoading = false
+    private var nextPage = 1
 
-    // MARK: - DTO / Unsplash
-    private struct PhotoResult: Decodable {
-        let id: String
-        let createdAt: String        // ← строка, как приходит из JSON
-        let width: Int
-        let height: Int
-        let likedByUser: Bool
-        let description: String?
-        let urls: UrlsResult
-
-        enum CodingKeys: String, CodingKey {
-            case id
-            case createdAt = "created_at"
-            case width, height
-            case likedByUser = "liked_by_user"
-            case description
-            case urls
-        }
+    init(session: URLSession = .shared) {
+        self.session = session
     }
 
-    private struct UrlsResult: Decodable {
-        let raw: String
-        let full: String
-        let regular: String
-        let small: String
-        let thumb: String
-    }
-
-    // MARK: - Thread helper
-    private func onMain(_ work: @escaping () -> Void) {
-        if Thread.isMainThread { work() } else { DispatchQueue.main.async(execute: work) }
-    }
-
-    private enum DateParsers {
-        static let iso8601 = ISO8601DateFormatter()
-    }
-
-    // MARK: - Публичный API
-    var isLoading: Bool { pagingTask != nil }
-
+    // Сброс состояния сервиса (для логаута)
     func reset() {
-        pagingTask?.cancel()
-        pagingTask = nil
-        likeTasks.values.forEach { $0.cancel() }
-        likeTasks.removeAll()
-        photos.removeAll()
-        lastLoadedPage = nil
-        NotificationCenter.default.post(name: ImagesListService.didChangeNotification, object: self)
+        photos = []
+        isLoading = false
+        nextPage = 1
     }
 
-    @discardableResult
-    func fetchPhotosNextPage() -> URLSessionTask? {
-        guard pagingTask == nil else { return pagingTask }
-
-        guard let token = OAuth2TokenStorage.shared.token else {
-            assertionFailure("No OAuth token")
-            return nil
+    // MARK: - Fetch
+    func fetchPhotosNextPage(completion: @escaping (Result<[Photo], Error>) -> Void) {
+        guard !isLoading else { return }
+        guard let token = OAuth2TokenStorage.shared.token, !token.isEmpty else {
+            completion(.failure(NSError(domain: "Auth", code: 401)))
+            return
         }
+        isLoading = true
 
-        let nextPage = (lastLoadedPage ?? 0) + 1
-
-        var components = URLComponents(string: "https://api.unsplash.com/photos")!
-        components.queryItems = [
-            URLQueryItem(name: "page", value: "\(nextPage)"),
-            URLQueryItem(name: "per_page", value: "10")
+        var comps = URLComponents(string: "https://api.unsplash.com/photos")!
+        comps.queryItems = [
+            .init(name: "page", value: "\(nextPage)"),
+            .init(name: "per_page", value: "10"),
+            .init(name: "order_by", value: "latest")
         ]
-        var request = URLRequest(url: components.url!)
+        var request = URLRequest(url: comps.url!)
         request.httpMethod = "GET"
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
 
-        pagingTask = urlSession.data(for: request) { [weak self] result in
+        let task = session.dataTask(with: request) { [weak self] data, response, error in
             guard let self else { return }
-            defer { self.pagingTask = nil }
+            defer { self.isLoading = false }
 
-            switch result {
-            case .success(let data):
-                do {
-                    let dtos = try JSONDecoder().decode([PhotoResult].self, from: data)
-                    let newPhotos: [Photo] = dtos.map { dto in
-                        let date = DateParsers.iso8601.date(from: dto.createdAt) // Date?
-                        return Photo(
-                            id: dto.id,
-                            size: CGSize(width: dto.width, height: dto.height),
-                            createdAt: date,
-                            welcomeDescription: dto.description,
-                            thumbImageURL: dto.urls.thumb,
-                            largeImageURL: dto.urls.regular,
-                            fullImageURL: dto.urls.full,
-                            isLiked: dto.likedByUser
-                        )
-                    }
+            if let error { return DispatchQueue.main.async { completion(.failure(error)) } }
 
-                    self.onMain {
-                        self.photos.append(contentsOf: newPhotos)
-                        self.lastLoadedPage = nextPage
-                        NotificationCenter.default.post(
-                            name: ImagesListService.didChangeNotification,
-                            object: self
-                        )
-                    }
-                } catch {
-                    print("[ImagesListService] decode error — \(error)")
+            guard
+                let http = response as? HTTPURLResponse,
+                (200...299).contains(http.statusCode),
+                let data
+            else {
+                return DispatchQueue.main.async {
+                    completion(.failure(NSError(domain: "Network", code: (response as? HTTPURLResponse)?.statusCode ?? -1)))
                 }
+            }
 
-            case .failure(let error):
-                print("[ImagesListService] network error — \(error)")
+            do {
+                let decoder = JSONDecoder()
+                decoder.keyDecodingStrategy = .convertFromSnakeCase
+                let iso = ISO8601DateFormatter()
+                let results = try decoder.decode([PhotoResult].self, from: data)
+                let mapped: [Photo] = results.map { dto in
+                    let w = max(1, dto.width)
+                    let h = max(1, dto.height)
+                    return Photo(
+                        id: dto.id,
+                        size: CGSize(width: w, height: h),
+                        createdAt: dto.created_at.flatMap { iso.date(from: $0) },
+                        welcomeDescription: dto.description,
+                        thumbImageURL: dto.urls.small,
+                        largeImageURL: dto.urls.regular,
+                        fullImageURL: dto.urls.regular,
+                        isLiked: dto.liked_by_user
+                    )
+                }
+                self.photos.append(contentsOf: mapped)
+                self.nextPage += 1
+                DispatchQueue.main.async { completion(.success(mapped)) }
+            } catch {
+                DispatchQueue.main.async { completion(.failure(error)) }
             }
         }
-
-        return pagingTask
+        task.resume() // ВАЖНО
     }
 
-    func changeLike(photoId: String, isLike: Bool, _ completion: @escaping (Result<Void, Error>) -> Void) {
-        if likeTasks[photoId] != nil {
-            onMain { completion(.success(())) }
-            return
-        }
-
+    // MARK: - Like / Unlike
+    func changeLike(photoId: String, isLike: Bool, completion: @escaping (Result<Bool, Error>) -> Void) {
         guard let token = OAuth2TokenStorage.shared.token else {
-            onMain { completion(.failure(NSError(domain: "NoToken", code: -1))) }
-            return
+            completion(.failure(NSError(domain: "Auth", code: 401))); return
         }
-        guard let url = URL(string: "https://api.unsplash.com/photos/\(photoId)/like") else {
-            onMain { completion(.failure(NSError(domain: "BadURL", code: -2))) }
-            return
-        }
+        let url = URL(string: "https://api.unsplash.com/photos/\(photoId)/like")!
+        var req = URLRequest(url: url)
+        req.httpMethod = isLike ? "POST" : "DELETE"
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
-        var request = URLRequest(url: url)
-        request.httpMethod = isLike ? "POST" : "DELETE"
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-
-        let task = urlSession.data(for: request) { [weak self] result in
-            guard let self else { return }
-            defer { self.likeTasks[photoId] = nil }
-
-            switch result {
-            case .success:
-                self.onMain {
-                    if let idx = self.photos.firstIndex(where: { $0.id == photoId }) {
-                        let p = self.photos[idx]
-                        let updated = Photo(
-                            id: p.id,
-                            size: p.size,
-                            createdAt: p.createdAt,
-                            welcomeDescription: p.welcomeDescription,
-                            thumbImageURL: p.thumbImageURL,
-                            largeImageURL: p.largeImageURL,
-                            fullImageURL: p.fullImageURL,
-                            isLiked: !p.isLiked
-                        )
-                        self.photos[idx] = updated
-                        NotificationCenter.default.post(
-                            name: ImagesListService.didChangeNotification,
-                            object: self,
-                            userInfo: ["updatedIndex": idx]
-                        )
-                    }
-                    completion(.success(()))
-                }
-
-            case .failure(let error):
-                self.onMain { completion(.failure(error)) }
+        let task = session.dataTask(with: req) { [weak self] data, response, error in
+            if let error { return DispatchQueue.main.async { completion(.failure(error)) } }
+            guard (response as? HTTPURLResponse).map({ (200...299).contains($0.statusCode) }) == true else {
+                return DispatchQueue.main.async { completion(.failure(NSError(domain: "Network", code: -1))) }
             }
+            // локально обновим
+            if let idx = self?.photos.firstIndex(where: { $0.id == photoId }) {
+                self?.photos[idx].isLiked = isLike
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(
+                        name: ImagesListService.didChangeNotification,
+                        object: self,
+                        userInfo: ["updatedIndex": idx]
+                    )
+                }
+            }
+            DispatchQueue.main.async { completion(.success(isLike)) }
         }
-
-        likeTasks[photoId] = task
+        task.resume()
     }
 }

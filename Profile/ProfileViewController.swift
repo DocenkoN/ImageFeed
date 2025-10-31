@@ -3,13 +3,24 @@ import Kingfisher
 
 final class ProfileViewController: UIViewController {
 
-    private var userPickView = UIImageView()
-    private var nameLabel = UILabel()
-    private var logoutButton = UIButton(type: .custom)
-    private var loginLabel = UILabel()
-    private var descriptionLabel = UILabel()
+    // MARK: - UI
+    private let userPickView = UIImageView()
+    private let nameLabel = UILabel()
+    private let logoutButton = UIButton(type: .custom)
+    private let loginLabel = UILabel()
+    private let descriptionLabel = UILabel()
 
-    private var profileImageServiceObserver: NSObjectProtocol?
+    // MARK: - MVP
+    private var presenter: ProfilePresenterProtocol?
+
+    // Инъекция презентера (для VC из Storyboard)
+    func configure(_ presenter: ProfilePresenterProtocol) {
+        self.presenter = presenter
+        presenter.view = self
+        #if DEBUG
+        print("[ProfileVC] configure()")
+        #endif
+    }
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -18,31 +29,21 @@ final class ProfileViewController: UIViewController {
         setupUIObjects()
         setupConstraints()
 
-        // Инициализация данными профиля (если уже доступны)
-        if let profile = ProfileService.shared.profile {
-            updateProfileDetails(profile: profile)
+        if presenter == nil {
+            #if DEBUG
+            // Фолбэк в DEBUG/UI-тестах, чтобы не падать, а увидеть проблему в логах
+            print("[ProfileVC] ⚠️ presenter == nil в viewDidLoad — автоинъекция")
+            configure(ProfilePresenter())
+            #else
+            assertionFailure("ProfilePresenterProtocol не сконфигурирован. Вызови configure(_:) до показа VC.")
+            return
+            #endif
         }
 
-        // Подписка на обновление аватара
-        profileImageServiceObserver = NotificationCenter.default.addObserver(
-            forName: ProfileImageService.didChangeNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            self?.updateAvatar()
-        }
-
-        updateAvatar()
+        presenter?.viewDidLoad()
     }
 
-    deinit {
-        if let observer = profileImageServiceObserver {
-            NotificationCenter.default.removeObserver(observer)
-        }
-    }
-
-    // MARK: - UI Setup
-
+    // MARK: - UI setup
     private func setupView() {
         view.backgroundColor = UIColor(named: "YP Black (iOS)")
     }
@@ -53,6 +54,16 @@ final class ProfileViewController: UIViewController {
         setupNameLabel()
         setupLoginLabel()
         setupDescriptionLabel()
+
+        // Accessibility для UI-тестов
+        userPickView.isAccessibilityElement = true
+        userPickView.accessibilityIdentifier = "Profile.avatar"
+
+        nameLabel.isAccessibilityElement = true
+        nameLabel.accessibilityIdentifier = "Profile.username"
+
+        logoutButton.isAccessibilityElement = true
+        logoutButton.accessibilityIdentifier = "exitButton"
     }
 
     private func setupUserPickView() {
@@ -66,16 +77,14 @@ final class ProfileViewController: UIViewController {
     private func setupLogoutButton() {
         let image = UIImage(named: "logOut")?.withRenderingMode(.alwaysOriginal)
             ?? UIImage(systemName: "arrow.backward")
-
         logoutButton.setImage(image, for: .normal)
         logoutButton.translatesAutoresizingMaskIntoConstraints = false
-        logoutButton.accessibilityLabel = "Logout"
-        // Привязываем действие на тап — показываем алерт подтверждения
         logoutButton.addTarget(self, action: #selector(didTapLogout), for: .touchUpInside)
         view.addSubview(logoutButton)
     }
 
     private func setupNameLabel() {
+        nameLabel.text = nil // Изначально пустое, данные загрузятся из Unsplash
         nameLabel.textColor = UIColor(named: "YP White (iOS)")
         nameLabel.font = UIFont.systemFont(ofSize: 23, weight: .bold)
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -83,6 +92,7 @@ final class ProfileViewController: UIViewController {
     }
 
     private func setupLoginLabel() {
+        loginLabel.text = nil // Изначально пустое, данные загрузятся из Unsplash
         loginLabel.textColor = UIColor(named: "YP Gray (iOS)")
         loginLabel.font = UIFont.systemFont(ofSize: 13)
         loginLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -90,6 +100,7 @@ final class ProfileViewController: UIViewController {
     }
 
     private func setupDescriptionLabel() {
+        descriptionLabel.text = nil // Изначально пустое, данные загрузятся из Unsplash
         descriptionLabel.textColor = UIColor(named: "YP White (iOS)")
         descriptionLabel.font = UIFont.systemFont(ofSize: 13)
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -122,23 +133,44 @@ final class ProfileViewController: UIViewController {
         ])
     }
 
-    // MARK: - Update UI
+    // MARK: - Actions
+    /// internal (доступно для @testable в тестах)
+    @objc func didTapLogout() {
+        guard let presenter else {
+            #if DEBUG
+            print("[ProfileVC] ⚠️ didTapLogout без презентера — игнор")
+            #else
+            assertionFailure("Presenter отсутствует")
+            #endif
+            return
+        }
+        presenter.didTapLogout()
+    }
+}
 
-    private func updateProfileDetails(profile: Profile) {
+// MARK: - ProfileViewProtocol
+extension ProfileViewController: ProfileViewProtocol {
+    func setProfile(_ profile: Profile) {
         nameLabel.text = profile.name
         loginLabel.text = profile.loginName
         descriptionLabel.text = profile.bio
     }
+    
+    /// Очистка данных профиля (если данные не загрузились)
+    func clearProfile() {
+        nameLabel.text = nil
+        loginLabel.text = nil
+        descriptionLabel.text = nil
+    }
 
-    private func updateAvatar() {
-        guard
-            let profileImageURL = ProfileImageService.shared.avatarURL,
-            let url = URL(string: profileImageURL)
-        else { return }
-
+    func setAvatar(urlString: String?) {
+        guard let urlString, let url = URL(string: urlString) else {
+            // Плейсхолдер для аватарки, если данные не подтянулись
+            userPickView.image = UIImage(named: "avatar") ?? UIImage(systemName: "person.crop.circle.fill")
+            return
+        }
         let placeholder = UIImage(named: "avatar") ?? UIImage(systemName: "person.crop.circle.fill")
         let processor = RoundCornerImageProcessor(cornerRadius: 35)
-
         userPickView.kf.indicatorType = .activity
         userPickView.kf.setImage(
             with: url,
@@ -151,17 +183,15 @@ final class ProfileViewController: UIViewController {
         )
     }
 
-    // MARK: - Actions
-
-    @objc private func didTapLogout() {
+    func presentLogoutAlert() {
         let alert = UIAlertController(
-            title: "Выйти из аккаунта?",
-            message: "Понадобится повторный вход.",
+            title: "Пока, пока!",
+            message: "Уверены, что хотите выйти?",
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: "Отмена", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Выйти", style: .destructive) { _ in
-            ProfileLogoutService.shared.logout()
+        alert.addAction(UIAlertAction(title: "Нет", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Да", style: .destructive) { [weak self] _ in
+            self?.presenter?.confirmLogout()
         })
         present(alert, animated: true)
     }

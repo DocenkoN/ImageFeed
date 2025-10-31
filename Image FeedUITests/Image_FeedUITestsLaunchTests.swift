@@ -1,5 +1,7 @@
 import XCTest
-final class ImageFeedUITestsLaunchTests: XCTestCase {
+@testable import ImageFeed
+
+final class Image_FeedUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true
