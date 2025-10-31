@@ -46,6 +46,9 @@ final class ProfilePresenter: ProfilePresenterProtocol {
     func viewDidLoad() {
         if let profile = profileService.profile {
             view?.setProfile(profile)
+        } else {
+            // Если данные профиля не подтянулись - очищаем поля
+            view?.clearProfile()
         }
         view?.setAvatar(urlString: profileImageService.avatarURL)
 

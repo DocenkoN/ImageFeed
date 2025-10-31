@@ -7,18 +7,35 @@ final class SingleImageViewController: UIViewController {
 
     // сюда передаём URL в prepare(for:)
     var imageURL: URL?
+    
+    private var currentRotation: CGFloat = 0
 
     override func viewDidLoad() {
         super.viewDidLoad()
         scrollView.delegate = self
 
         imageView.contentMode = .scaleAspectFit
-        imageView.kf.indicatorType = .none //
+        imageView.kf.indicatorType = .none
+        
+        // Настройка жестов
+        setupGestureRecognizers()
+
+        startLoadingFullImage()
+    }
+    
+    private func setupGestureRecognizers() {
+        // Двойной тап для зумирования
         let doubleTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
         doubleTap.numberOfTapsRequired = 2
         scrollView.addGestureRecognizer(doubleTap)
-
-        startLoadingFullImage()
+        
+        // Поворот изображения
+        let rotationGesture = UIRotationGestureRecognizer(target: self, action: #selector(handleRotation(_:)))
+        rotationGesture.delegate = self
+        imageView.addGestureRecognizer(rotationGesture)
+        
+        // Включаем взаимодействие с imageView для жестов
+        imageView.isUserInteractionEnabled = true
     }
 
     // MARK: - Actions
@@ -43,11 +60,18 @@ final class SingleImageViewController: UIViewController {
             case .success(let value):
                 self.rescaleAndCenterImageInScrollView(image: value.image)
             case .failure:
+                self.showPlaceholder()
                 self.showError()
             }
         }
     }
 
+    private func showPlaceholder() {
+        guard let placeholder = UIImage(named: "placeholder") else { return }
+        imageView.image = placeholder
+        rescaleAndCenterImageInScrollView(image: placeholder)
+    }
+    
     private func showError() {
         let alert = UIAlertController(
             title: "Что-то пошло не так",
@@ -64,6 +88,10 @@ final class SingleImageViewController: UIViewController {
     // MARK: - Zoom & Center
     private func rescaleAndCenterImageInScrollView(image: UIImage) {
         view.layoutIfNeeded()
+
+        // Сбрасываем поворот при загрузке нового изображения
+        imageView.transform = .identity
+        currentRotation = 0
 
         imageView.frame = CGRect(origin: .zero, size: image.size)
         scrollView.contentSize = image.size
@@ -104,6 +132,21 @@ final class SingleImageViewController: UIViewController {
             scrollView.setZoomScale(scrollView.minimumZoomScale, animated: true)
         }
     }
+    
+    @objc private func handleRotation(_ recognizer: UIRotationGestureRecognizer) {
+        guard recognizer.state == .began || recognizer.state == .changed else {
+            // Фиксируем поворот при окончании жеста
+            if recognizer.state == .ended || recognizer.state == .cancelled {
+                currentRotation = atan2(imageView.transform.b, imageView.transform.a)
+            }
+            return
+        }
+        
+        // Применяем поворот к изображению
+        let rotation = recognizer.rotation + currentRotation
+        imageView.transform = CGAffineTransform(rotationAngle: rotation)
+        recognizer.rotation = 0
+    }
 }
 
 extension SingleImageViewController: UIScrollViewDelegate {
@@ -111,5 +154,12 @@ extension SingleImageViewController: UIScrollViewDelegate {
 
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
         centerImage()
+    }
+}
+
+extension SingleImageViewController: UIGestureRecognizerDelegate {
+    // Разрешаем одновременное выполнение жестов (zoom, pan, rotation)
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
     }
 }

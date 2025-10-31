@@ -3,15 +3,16 @@ import Foundation
 
 final class ProfileViewSpy: ProfileViewProtocol {
     private(set) var setProfileCalls: [Profile] = []
+    private(set) var clearProfileCalls = 0
     private(set) var setAvatarCalls: [String?] = []
     private(set) var presentLogoutAlertCalls = 0
 
     func setProfile(_ profile: Profile) { setProfileCalls.append(profile) }
+    func clearProfile() { clearProfileCalls += 1 }
     func setAvatar(urlString: String?) { setAvatarCalls.append(urlString) }
     func presentLogoutAlert() { presentLogoutAlertCalls += 1 }
 }
 
-// Стаб-зависимости — реализуем протоколы из ProfilePresenter.swift (видны через @testable)
 final class ProfileServiceStub: ProfileServiceProviding {
     let profile: Profile?
     init(profile: Profile?) { self.profile = profile }

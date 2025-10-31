@@ -63,7 +63,7 @@ final class ProfileViewController: UIViewController {
         nameLabel.accessibilityIdentifier = "Profile.username"
 
         logoutButton.isAccessibilityElement = true
-        logoutButton.accessibilityIdentifier = "Profile.logoutButton"
+        logoutButton.accessibilityIdentifier = "exitButton"
     }
 
     private func setupUserPickView() {
@@ -84,6 +84,7 @@ final class ProfileViewController: UIViewController {
     }
 
     private func setupNameLabel() {
+        nameLabel.text = nil // Изначально пустое, данные загрузятся из Unsplash
         nameLabel.textColor = UIColor(named: "YP White (iOS)")
         nameLabel.font = UIFont.systemFont(ofSize: 23, weight: .bold)
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -91,6 +92,7 @@ final class ProfileViewController: UIViewController {
     }
 
     private func setupLoginLabel() {
+        loginLabel.text = nil // Изначально пустое, данные загрузятся из Unsplash
         loginLabel.textColor = UIColor(named: "YP Gray (iOS)")
         loginLabel.font = UIFont.systemFont(ofSize: 13)
         loginLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -98,6 +100,7 @@ final class ProfileViewController: UIViewController {
     }
 
     private func setupDescriptionLabel() {
+        descriptionLabel.text = nil // Изначально пустое, данные загрузятся из Unsplash
         descriptionLabel.textColor = UIColor(named: "YP White (iOS)")
         descriptionLabel.font = UIFont.systemFont(ofSize: 13)
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -152,9 +155,17 @@ extension ProfileViewController: ProfileViewProtocol {
         loginLabel.text = profile.loginName
         descriptionLabel.text = profile.bio
     }
+    
+    /// Очистка данных профиля (если данные не загрузились)
+    func clearProfile() {
+        nameLabel.text = nil
+        loginLabel.text = nil
+        descriptionLabel.text = nil
+    }
 
     func setAvatar(urlString: String?) {
         guard let urlString, let url = URL(string: urlString) else {
+            // Плейсхолдер для аватарки, если данные не подтянулись
             userPickView.image = UIImage(named: "avatar") ?? UIImage(systemName: "person.crop.circle.fill")
             return
         }
@@ -174,12 +185,12 @@ extension ProfileViewController: ProfileViewProtocol {
 
     func presentLogoutAlert() {
         let alert = UIAlertController(
-            title: "Выйти из аккаунта?",
-            message: "Понадобится повторный вход.",
+            title: "Пока, пока!",
+            message: "Уверены, что хотите выйти?",
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: "Отмена", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Выйти", style: .destructive) { [weak self] _ in
+        alert.addAction(UIAlertAction(title: "Нет", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Да", style: .destructive) { [weak self] _ in
             self?.presenter?.confirmLogout()
         })
         present(alert, animated: true)

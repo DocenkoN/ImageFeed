@@ -17,64 +17,85 @@ final class WebViewViewController: UIViewController & WebViewViewControllerProto
 
     var presenter: WebViewPresenterProtocol?
 
-    private let webView: WKWebView = {
-        let wv = WKWebView()
-        wv.accessibilityIdentifier = "UnsplashWebView"
-        return wv
-    }()
-    private let progressView: UIProgressView = {
-        let v = UIProgressView(progressViewStyle: .default)
-        v.trackTintColor = .clear
-        v.translatesAutoresizingMaskIntoConstraints = false
-        return v
-    }()
+    @IBOutlet private weak var webView: WKWebView?
+    @IBOutlet private weak var progressView: UIProgressView?
 
     weak var delegate: WebViewViewControllerDelegate?
 
-    private let estimatedProgressKeyPath = #keyPath(WKWebView.estimatedProgress)
+    private var estimatedProgressObservation: NSKeyValueObservation?
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        guard let webView = webView, let progressView = progressView else {
+            assertionFailure("WebView или ProgressView не подключены из Storyboard")
+            return
+        }
+        
         setupUserInterface()
-        webView.addObserver(self, forKeyPath: estimatedProgressKeyPath, options: .new, context: nil)
         webView.navigationDelegate = self
-        presenter?.viewDidLoad()
+        webView.accessibilityIdentifier = "UnsplashWebView"
+        
+        configureWebViewForVPN(webView)
+        
+        estimatedProgressObservation = webView.observe(\.estimatedProgress, options: [.new]) { [weak self] webView, _ in
+            self?.presenter?.didUpdateProgressValue(webView.estimatedProgress)
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, self.presenter != nil else { return }
+            self.presenter?.viewDidLoad()
+        }
     }
 
     deinit {
-        webView.removeObserver(self, forKeyPath: estimatedProgressKeyPath, context: nil)
+        estimatedProgressObservation = nil
     }
 
     // MARK: - Protocol
-    func load(request: URLRequest) { webView.load(request) }
-    func setProgressValue(_ newValue: Float) { progressView.setProgress(newValue, animated: true) }
-    func setProgressHidden(_ isHidden: Bool) { progressView.isHidden = isHidden }
+    func load(request: URLRequest) {
+        guard let webView = webView else {
+            assertionFailure("WebView не подключен из Storyboard")
+            return
+        }
+        if webView.isLoading {
+            webView.stopLoading()
+        }
+        webView.load(request)
+    }
+    
+    func setProgressValue(_ newValue: Float) {
+        guard let progressView = progressView else { return }
+        progressView.setProgress(newValue, animated: true)
+    }
+    
+    func setProgressHidden(_ isHidden: Bool) {
+        guard let progressView = progressView else { return }
+        progressView.isHidden = isHidden
+    }
 
+    // MARK: - Configuration
+    private func configureWebViewForVPN(_ webView: WKWebView) {
+        webView.configuration.preferences.javaScriptEnabled = true
+        webView.configuration.preferences.javaScriptCanOpenWindowsAutomatically = true
+        
+        if #available(iOS 14.0, *) {
+            webView.configuration.defaultWebpagePreferences.allowsContentJavaScript = true
+        }
+        
+        webView.configuration.allowsInlineMediaPlayback = true
+        webView.configuration.mediaTypesRequiringUserActionForPlayback = []
+        webView.configuration.websiteDataStore = .default()
+    }
+    
     // MARK: - UI
     private func setupUserInterface() {
-        view.backgroundColor = .systemBackground
-        webView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(webView)
-        view.addSubview(progressView)
-
-        NSLayoutConstraint.activate([
-            webView.topAnchor.constraint(equalTo: view.topAnchor),
-            webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            webView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            webView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-
-            progressView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            progressView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            progressView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            progressView.heightAnchor.constraint(equalToConstant: 2)
-        ])
+        progressView?.trackTintColor = .clear
+        progressView?.accessibilityIdentifier = "WebView.progress"
 
         let closeItem = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(didTapCloseButton))
         closeItem.accessibilityIdentifier = "WebView.backButton"
         navigationItem.leftBarButtonItem = closeItem
-
-        // Accessibility
-        progressView.accessibilityIdentifier = "WebView.progress"
     }
 
     @objc private func didTapCloseButton() {
@@ -86,19 +107,6 @@ final class WebViewViewController: UIViewController & WebViewViewControllerProto
             return presenter?.code(from: url)
         }
         return nil
-    }
-
-    override func observeValue(
-        forKeyPath keyPath: String?,
-        of object: Any?,
-        change: [NSKeyValueChangeKey : Any]?,
-        context: UnsafeMutableRawPointer?
-    ) {
-        if keyPath == estimatedProgressKeyPath {
-            presenter?.didUpdateProgressValue(webView.estimatedProgress)
-        } else {
-            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
-        }
     }
 }
 
@@ -115,5 +123,94 @@ extension WebViewViewController: WKNavigationDelegate {
             return
         }
         decisionHandler(.allow)
+    }
+    
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        presenter?.didUpdateProgressValue(1.0)
+    }
+    
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        let nsError = error as NSError
+        let errorCode = nsError.code
+        
+        #if DEBUG
+        print("[WebView] Ошибка навигации: \(error.localizedDescription)")
+        print("[WebView] Domain: \(nsError.domain), Code: \(errorCode)")
+        print("[WebView] UserInfo: \(nsError.userInfo)")
+        if let failingURL = nsError.userInfo[NSURLErrorFailingURLErrorKey] as? URL {
+            print("[WebView] Failing URL: \(failingURL.absoluteString)")
+        }
+        #endif
+        
+        showErrorAlert(error: error, errorCode: errorCode)
+    }
+    
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        let nsError = error as NSError
+        let errorCode = nsError.code
+        
+        #if DEBUG
+        print("[WebView] Ошибка provisional: \(error.localizedDescription)")
+        print("[WebView] Domain: \(nsError.domain), Code: \(errorCode)")
+        if let failingURL = nsError.userInfo[NSURLErrorFailingURLErrorKey] as? URL {
+            print("[WebView] Failing URL: \(failingURL.absoluteString)")
+        }
+        #endif
+        
+        showErrorAlert(error: error, errorCode: errorCode)
+    }
+    
+    private func showErrorAlert(error: Error, errorCode: Int) {
+        var errorMessage = "Не удалось загрузить страницу авторизации."
+        var troubleshootingTips = ""
+        
+        // Диагностика конкретных ошибок
+        switch errorCode {
+        case NSURLErrorNotConnectedToInternet:
+            errorMessage = "Нет подключения к интернету"
+            troubleshootingTips = "\n\n• Проверьте Wi‑Fi или мобильный интернет\n• Убедитесь, что интернет работает в других приложениях"
+            
+        case NSURLErrorTimedOut:
+            errorMessage = "Превышено время ожидания"
+            troubleshootingTips = "\n\n• Проверьте скорость интернета\n• Попробуйте отключить VPN\n• Проверьте настройки файрвола/антивируса"
+            
+        case NSURLErrorCannotFindHost, NSURLErrorDNSLookupFailed:
+            errorMessage = "Не удалось найти сервер"
+            troubleshootingTips = "\n\n• Проверьте DNS настройки\n• Попробуйте другой DNS (8.8.8.8 или 1.1.1.1)\n• Отключите VPN или прокси"
+            
+        case NSURLErrorCannotConnectToHost:
+            errorMessage = "Не удалось подключиться к серверу"
+            troubleshootingTips = "\n\n• Проверьте, не блокирует ли файрвол или антивирус\n• Отключите VPN\n• Проверьте настройки прокси"
+            
+        case NSURLErrorNetworkConnectionLost:
+            errorMessage = "Соединение прервано"
+            troubleshootingTips = "\n\n• Проверьте стабильность интернета\n• Перезапустите Wi‑Fi\n• Проверьте настройки VPN"
+            
+        case NSURLErrorSecureConnectionFailed:
+            errorMessage = "Ошибка безопасного соединения"
+            troubleshootingTips = "\n\n• Проверьте дату и время на устройстве\n• Отключите VPN, который может блокировать SSL\n• Проверьте корпоративный прокси/файрвол"
+            
+        case -1200...(-1000):
+            errorMessage = "Ошибка SSL соединения"
+            troubleshootingTips = "\n\n• Проверьте системную дату и время\n• Отключите VPN с неправильной конфигурацией\n• Проверьте настройки корпоративного прокси"
+            
+        default:
+            troubleshootingTips = "\n\n• Проверьте подключение к интернету\n• Попробуйте отключить VPN\n• Перезапустите приложение\n• Проверьте, не блокирует ли антивирус или файрвол"
+        }
+        
+        let alert = UIAlertController(
+            title: "Ошибка загрузки",
+            message: "\(errorMessage)\(troubleshootingTips)\n\nТехническая информация:\n\(error.localizedDescription)",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "Повторить", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            self.presenter?.viewDidLoad()
+        })
+        alert.addAction(UIAlertAction(title: "Отмена", style: .cancel) { [weak self] _ in
+            guard let self = self else { return }
+            self.delegate?.webViewViewControllerDidCancel(self)
+        })
+        present(alert, animated: true)
     }
 }

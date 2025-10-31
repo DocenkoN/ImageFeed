@@ -12,17 +12,16 @@ final class WebViewPresenter: WebViewPresenterProtocol {
     weak var view: WebViewViewControllerProtocol?
     private let authHelper: AuthHelperProtocol
 
-    // добавили инициализатор
     init(authHelper: AuthHelperProtocol = AuthHelper()) {
         self.authHelper = authHelper
     }
 
-    // теперь используем authHelper, а не WebViewConstants
     func viewDidLoad() {
-        guard let request = authHelper.authRequest() else { return }
-
-        view?.load(request: request)
+        guard let request = authHelper.authRequest() else {
+            return
+        }
         didUpdateProgressValue(0)
+        view?.load(request: request)
     }
 
     func didUpdateProgressValue(_ newValue: Double) {

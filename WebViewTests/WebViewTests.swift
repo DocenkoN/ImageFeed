@@ -8,9 +8,12 @@ final class WebViewTests: XCTestCase {
         // given
         let storyboard = UIStoryboard(name: "Main", bundle: Bundle(for: WebViewViewController.self))
 
-        let viewController = storyboard.instantiateViewController(
-            withIdentifier: "WebViewViewController"
-        ) as! WebViewViewController
+        guard let viewController = storyboard.instantiateViewController(
+            withIdentifier: "WebView"
+        ) as? WebViewViewController else {
+            XCTFail("Не удалось загрузить WebViewViewController из Storyboard")
+            return
+        }
 
         let presenter = WebViewPresenterSpy()
         viewController.presenter = presenter
@@ -18,6 +21,12 @@ final class WebViewTests: XCTestCase {
 
         // when
         _ = viewController.view  // форсим загрузку view, вызовется viewDidLoad у VC
+        // Ждем выполнения async блока из viewDidLoad
+        let expectation = expectation(description: "Presenter viewDidLoad called")
+        DispatchQueue.main.async {
+            expectation.fulfill()
+        }
+        waitForExpectations(timeout: 0.5)
 
         // then
         XCTAssertTrue(presenter.viewDidLoadCalled)
@@ -85,7 +94,8 @@ final class WebViewTests: XCTestCase {
     // MARK: - Test 5
     func testCodeFromURL() {
         // given
-        var urlComponents = URLComponents(string: "https://unsplash.com/oauth/authorize/native")!
+        // URL должен соответствовать схеме imagefeed://auth с параметром code
+        var urlComponents = URLComponents(string: "imagefeed://auth")!
         urlComponents.queryItems = [URLQueryItem(name: "code", value: "test code")]
         let url = urlComponents.url!
         let authHelper = AuthHelper()

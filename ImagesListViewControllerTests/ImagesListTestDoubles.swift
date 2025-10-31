@@ -20,6 +20,35 @@ final class ImagesListViewSpy: ImagesListViewProtocol {
     func dismissHUD() { hudDismissCalls += 1 }
 }
 
+// MARK: - Service stub для презентера
+final class ImagesListServiceStub: ImagesListServiceProtocol {
+    var photos: [Photo] = []
+    
+    var fetchPhotosNextPageCallCount = 0
+    var fetchPhotosNextPageResult: Result<[Photo], Error>?
+    
+    var changeLikeCallCount = 0
+    var changeLikePhotoId: String?
+    var changeLikeIsLike: Bool?
+    var changeLikeResult: Result<Bool, Error>?
+    
+    func fetchPhotosNextPage(completion: @escaping (Result<[Photo], Error>) -> Void) {
+        fetchPhotosNextPageCallCount += 1
+        if let result = fetchPhotosNextPageResult {
+            completion(result)
+        }
+    }
+    
+    func changeLike(photoId: String, isLike: Bool, completion: @escaping (Result<Bool, Error>) -> Void) {
+        changeLikeCallCount += 1
+        changeLikePhotoId = photoId
+        changeLikeIsLike = isLike
+        if let result = changeLikeResult {
+            completion(result)
+        }
+    }
+}
+
 // MARK: - Presenter spy для VC-тестов
 final class ImagesListPresenterSpy: ImagesListPresenterProtocol {
     weak var view: ImagesListViewProtocol?

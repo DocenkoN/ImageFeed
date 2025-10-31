@@ -108,7 +108,7 @@
         <!--Web View View Controller-->
         <scene sceneID="YjA-yH-kZZ">
             <objects>
-                <viewController storyboardIdentifier="WebViewViewController" id="Fan-9R-IEO" customClass="WebViewViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="WebView" id="Fan-9R-IEO" customClass="WebViewViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="LRZ-BN-OqC">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -139,6 +139,10 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="hfW-c7-gMh"/>
+                    <connections>
+                        <outlet property="progressView" destination="FlA-JQ-dbG" id="7zZ-h8-0wK"/>
+                        <outlet property="webView" destination="C7C-cW-lWI" id="gFp-Lm-b1Q"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aba-20-UpM" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -155,6 +159,7 @@
                             <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uwr-Gd-SCU" userLabel="Login Button">
                                 <rect key="frame" x="16" y="724" width="382" height="48"/>
                                 <color key="backgroundColor" name="YP White (iOS)"/>
+                                <accessibility key="accessibilityConfiguration" identifier="Войти"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="48" id="tRy-9n-Y67"/>
                                 </constraints>
@@ -298,6 +303,7 @@
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JE0-3o-LdO" userLabel="back_Button">
                                 <rect key="frame" x="8" y="56" width="48" height="48"/>
+                                <accessibility key="accessibilityConfiguration" identifier="BackButton"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="48" id="i1Q-HG-acr"/>
                                     <constraint firstAttribute="height" constant="48" id="xc9-tF-tJZ"/>

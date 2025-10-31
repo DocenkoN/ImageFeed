@@ -42,7 +42,7 @@ final class ImagesListService: ImagesListServiceProtocol {
     private var isLoading = false
     private var nextPage = 1
 
-    private init(session: URLSession = .shared) {
+    init(session: URLSession = .shared) {
         self.session = session
     }
 

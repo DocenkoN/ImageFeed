@@ -13,7 +13,7 @@ final class AuthViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        loginButton?.accessibilityIdentifier = "Authenticate"
+        loginButton?.accessibilityIdentifier = "Войти"
     }
 
     // MARK: - Action
@@ -22,13 +22,20 @@ final class AuthViewController: UIViewController {
         isFetchingToken = true
         sender.isEnabled = false
 
-        let webViewController = WebViewViewController()
+        let storyboard = UIStoryboard(name: "Main", bundle: .main)
+        guard let webViewController = storyboard.instantiateViewController(
+            withIdentifier: "WebView"
+        ) as? WebViewViewController else {
+            assertionFailure("Не удалось загрузить WebViewViewController из Storyboard")
+            isFetchingToken = false
+            sender.isEnabled = true
+            return
+        }
 
         let authHelper = AuthHelper()
         let webViewPresenter = WebViewPresenter(authHelper: authHelper)
         webViewController.presenter = webViewPresenter
         webViewPresenter.view = webViewController
-
         webViewController.delegate = self
 
         let navigationController = UINavigationController(rootViewController: webViewController)

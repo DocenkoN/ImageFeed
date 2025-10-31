@@ -3,10 +3,10 @@
 import UIKit
 
 final class ImagesListViewController: UIViewController {
-    @IBOutlet private weak var tableView: UITableView!
+    @IBOutlet private weak var tableView: UITableView?
 
     // MVP
-    private var presenter: ImagesListPresenterProtocol!
+    private var presenter: ImagesListPresenterProtocol?
 
     // Инъекция презентера для VC из Storyboard
     func configure(_ presenter: ImagesListPresenterProtocol) {
@@ -26,6 +26,25 @@ final class ImagesListViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Для юнит-тестов: если tableView не загрузился из Storyboard, создаем программно
+        if tableView == nil {
+            let table = UITableView()
+            table.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(table)
+            NSLayoutConstraint.activate([
+                table.topAnchor.constraint(equalTo: view.topAnchor),
+                table.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                table.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                table.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ])
+            tableView = table
+        }
+        
+        guard let tableView = tableView else {
+            assertionFailure("TableView не удалось создать")
+            return
+        }
 
         tableView.dataSource = self
         tableView.delegate = self
@@ -39,7 +58,7 @@ final class ImagesListViewController: UIViewController {
             configure(fallback)
         }
 
-        presenter.viewDidLoad()
+        presenter?.viewDidLoad()
     }
 
     // MARK: - Segue
@@ -47,9 +66,10 @@ final class ImagesListViewController: UIViewController {
         if segue.identifier == showSingleImageSegueIdentifier {
             guard
                 let vc = segue.destination as? SingleImageViewController,
-                let indexPath = sender as? IndexPath
+                let indexPath = sender as? IndexPath,
+                let presenter = presenter
             else {
-                assertionFailure("Invalid segue destination")
+                assertionFailure("Invalid segue destination or presenter is nil")
                 return
             }
             let photo = presenter.photo(at: indexPath.row)
@@ -63,7 +83,7 @@ final class ImagesListViewController: UIViewController {
 // MARK: - UITableViewDataSource
 extension ImagesListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        presenter.photosCount
+        presenter?.photosCount ?? 0
     }
 
     func tableView(_ tableView: UITableView,
@@ -75,6 +95,10 @@ extension ImagesListViewController: UITableViewDataSource {
             return UITableViewCell()
         }
 
+        guard let presenter = presenter else {
+            return UITableViewCell()
+        }
+        
         let model = presenter.photo(at: indexPath.row)
         cell.delegate = self
         cell.configure(with: model, dateFormatter: dateFormatter)
@@ -85,18 +109,31 @@ extension ImagesListViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension ImagesListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        presenter.didSelectRow(at: indexPath)
+        presenter?.didSelectRow(at: indexPath)
+        
+        // В юнит-тестах segue может отсутствовать, поэтому проверяем наличие storyboard
+        // Если storyboard == nil, значит view controller создан программно (в тестах)
+        guard storyboard != nil else {
+            return // В тестах просто выходим, segue не выполняется
+        }
+        
+        // Выполняем segue только если есть storyboard
+        // В реальном приложении segue должен существовать, если его нет - будет исключение
         performSegue(withIdentifier: showSingleImageSegueIdentifier, sender: indexPath)
     }
 
     func tableView(_ tableView: UITableView,
                    willDisplay cell: UITableViewCell,
                    forRowAt indexPath: IndexPath) {
-        presenter.willDisplayRow(at: indexPath)
+        presenter?.willDisplayRow(at: indexPath)
     }
 
     func tableView(_ tableView: UITableView,
                    heightForRowAt indexPath: IndexPath) -> CGFloat {
+        guard let presenter = presenter else {
+            return UITableView.automaticDimension
+        }
+        
         let photo = presenter.photo(at: indexPath.row)
         let insets = UIEdgeInsets(top: 4, left: 16, bottom: 4, right: 16)
         let imageViewWidth = tableView.bounds.width - insets.left - insets.right
@@ -109,7 +146,9 @@ extension ImagesListViewController: UITableViewDelegate {
 // MARK: - ImagesListCellDelegate
 extension ImagesListViewController: ImagesListCellDelegate {
     func imagesListCellDidTapLike(_ cell: ImagesListCell) {
-        if let indexPath = tableView.indexPath(for: cell) {
+        guard let presenter = presenter else { return }
+        
+        if let tableView = tableView, let indexPath = tableView.indexPath(for: cell) {
             presenter.didTapLike(at: indexPath)
         } else {
             // Фолбэк для юнит-тестов, где ячейка не в таблице VC
@@ -126,23 +165,25 @@ extension ImagesListViewController: ImagesListCellDelegate {
 extension ImagesListViewController: ImagesListViewProtocol {
 
     func insertRows(at indexPaths: [IndexPath]) {
+        guard let tableView = tableView else { return }
         tableView.performBatchUpdates({
             tableView.insertRows(at: indexPaths, with: .automatic)
         })
     }
 
     func reloadRows(at indexPaths: [IndexPath]) {
+        guard let tableView = tableView else { return }
         tableView.reloadRows(at: indexPaths, with: .automatic)
     }
 
     func reloadTable() {
-        tableView.reloadData()
+        tableView?.reloadData()
     }
 
     func showLikeError() {
         let alert = UIAlertController(
             title: "Не удалось поставить лайк",
-            message: "Повторите попытку позже.",
+            message: "попробуйте еще раз",
             preferredStyle: .alert
         )
         alert.addAction(UIAlertAction(title: "OK", style: .default))
@@ -150,6 +191,7 @@ extension ImagesListViewController: ImagesListViewProtocol {
     }
 
     func setLikeButtonEnabled(_ enabled: Bool, at indexPath: IndexPath) {
+        guard let tableView = tableView else { return }
         if let cell = tableView.cellForRow(at: indexPath) as? ImagesListCell {
             cell.setLikeButtonEnabled(enabled)
         }

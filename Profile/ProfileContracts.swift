@@ -2,6 +2,7 @@ import Foundation
 
 protocol ProfileViewProtocol: AnyObject {
     func setProfile(_ profile: Profile)
+    func clearProfile()
     func setAvatar(urlString: String?)
     func presentLogoutAlert()
 }

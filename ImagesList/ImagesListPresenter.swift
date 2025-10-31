@@ -36,6 +36,12 @@ final class ImagesListPresenter: ImagesListPresenterProtocol {
     }
 
     func willDisplayRow(at indexPath: IndexPath) {
+        // В режиме UI теста не выполняем пагинацию
+        let isUITest = ProcessInfo.processInfo.arguments.contains("-uiTest")
+        if isUITest {
+            return
+        }
+        
         if indexPath.row >= service.photos.count - 3 { fetchNext() }
     }
 
@@ -60,6 +66,12 @@ final class ImagesListPresenter: ImagesListPresenterProtocol {
 
     // MARK: - Private
     private func fetchNext() {
+        // В режиме UI теста не загружаем данные
+        let isUITest = ProcessInfo.processInfo.arguments.contains("-uiTest")
+        if isUITest {
+            return
+        }
+        
         service.fetchPhotosNextPage { [weak self] result in
             switch result {
             case .success(let items):

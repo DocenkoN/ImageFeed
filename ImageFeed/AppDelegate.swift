@@ -26,7 +26,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         }
 
         // Флаг UI-тестов
-        let isUITesting = ProcessInfo.processInfo.arguments.contains("-isUITesting")
+        let isUITesting = ProcessInfo.processInfo.arguments.contains("-uiTest")
         if isUITesting {
             UIView.setAnimationsEnabled(false)
             ImageCache.default.clearMemoryCache()

@@ -17,10 +17,10 @@ final class ImagesListCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         selectionStyle = .none
-        cellImage.contentMode = .scaleAspectFill
-        cellImage.clipsToBounds = true
-        likeButton.adjustsImageWhenHighlighted = false
-        likeButton.accessibilityLabel = "Like"
+        cellImage?.contentMode = .scaleAspectFill
+        cellImage?.clipsToBounds = true
+        likeButton?.adjustsImageWhenHighlighted = false
+        likeButton?.accessibilityLabel = "Like"
     }
 
     override func layoutSubviews() {
@@ -30,20 +30,23 @@ final class ImagesListCell: UITableViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        cellImage.kf.cancelDownloadTask()
-        cellImage.image = nil
-        cellImage.kf.indicatorType = .none
+        cellImage?.kf.cancelDownloadTask()
+        cellImage?.image = nil
+        cellImage?.kf.indicatorType = .none
 
         gradientLayer?.removeFromSuperlayer()
         gradientLayer = nil
 
-        dateLabel.text = nil
+        dateLabel?.text = nil
         delegate = nil
-        likeButton.isEnabled = true
+        likeButton?.isEnabled = true
     }
 
     // MARK: - Configure
     func configure(with photo: Photo, dateFormatter: DateFormatter) {
+        // Защита от nil outlets (для unit тестов, где ячейка создается программно)
+        guard let dateLabel = dateLabel else { return }
+        
         if let createdAt = photo.createdAt {
             dateLabel.text = dateFormatter.string(from: createdAt)
         } else {
@@ -52,6 +55,9 @@ final class ImagesListCell: UITableViewCell {
 
         setIsLiked(photo.isLiked)
 
+        // Защита от nil cellImage
+        guard let cellImage = cellImage else { return }
+        
         cellImage.kf.indicatorType = .activity
         let placeholder = UIImage(named: "placeholder")
 
@@ -80,21 +86,24 @@ final class ImagesListCell: UITableViewCell {
 
     // MARK: - Public
     func setIsLiked(_ isLiked: Bool) {
+        guard let likeButton = likeButton else { return }
         let imageName = isLiked ? "like_button_on" : "like_button_off"
         likeButton.setImage(UIImage(named: imageName), for: .normal)
         likeButton.accessibilityValue = isLiked ? "liked" : "not liked"
-        likeButton.accessibilityIdentifier = isLiked ? "like button on" : "like button off"
+        likeButton.accessibilityIdentifier = "LikeButton"
     }
 
     func setLikeButtonEnabled(_ enabled: Bool) {
-        likeButton.isEnabled = enabled
+        likeButton?.isEnabled = enabled
     }
 
     // MARK: - Private
     private func applyGradientToImage() {
         gradientLayer?.removeFromSuperlayer()
         gradientLayer = nil
-        guard cellImage.bounds.width > 0, cellImage.bounds.height > 0 else { return }
+        guard let cellImage = cellImage,
+              cellImage.bounds.width > 0,
+              cellImage.bounds.height > 0 else { return }
 
         let gradientColor = UIColor(named: "YP Black (iOS)") ?? .black
         let g = CAGradientLayer()

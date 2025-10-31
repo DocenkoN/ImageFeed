@@ -2,8 +2,10 @@ import UIKit
 
 enum TabBarBuilder {
     static func build() -> UITabBarController {
-        let tabBar = UIStoryboard(name: "Main", bundle: .main)
-            .instantiateViewController(withIdentifier: "TabBarController") as! UITabBarController
+        guard let tabBar = UIStoryboard(name: "Main", bundle: .main)
+            .instantiateViewController(withIdentifier: "TabBarController") as? UITabBarController else {
+            fatalError("Не удалось загрузить TabBarController из Storyboard")
+        }
 
         // Обходим все вкладки и БЕЗ KVC настраиваем нужные VC
         (tabBar.viewControllers ?? []).forEach { root in
